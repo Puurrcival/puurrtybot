@@ -1,0 +1,7 @@
+name: puurrtybot
+channels:
+  - defaults
+dependencies:
+  - python
+  - discord.py
+prefix: /home/ckoss/miniconda3/envs/puurrtybot
