@@ -2,6 +2,18 @@ import puurrtybot, requests
 headers = {'project_id': puurrtybot.BLOCKFROST_TOKEN}
 
 
+def get_address_by_adahandle(adahandle: str):
+    adahandle = f"""${adahandle.strip('$')}""".strip()
+    try:
+        return requests.get(f"""https://pool.pm/wallet/{adahandle}""").json()['addr']
+    except KeyError:
+        try:
+            if requests.get(f"""https://pool.pm/wallet/{adahandle.strip('$')}""").json()['addr'][:4] in ['stak', 'addr']:
+                    return adahandle.strip('$')
+        except KeyError:
+            return False
+
+
 def get_assets_by_policy(policy):
     page=1
     assets=[]

@@ -1,11 +1,16 @@
 # Ignore Logs
 logs
 *.log
+**.egg-info
 
-# Ignore Pytohn Cache
+# Ignore Cache
 **/__pycache__/
 
 # Ignore the credentials directory
 **/credentials
 
+#Ignore Databases
+**/databases
 
+#Ignore Notebooks
+/notebooks
