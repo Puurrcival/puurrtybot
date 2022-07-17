@@ -18,5 +18,5 @@ conda activate puurrtybot
 pip install -e .
 
 # run the bot
-python puurrtybot/bot/bot.py
+python puurrtybot/discord/bot.py
 ```

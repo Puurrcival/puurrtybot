@@ -1,0 +1,132 @@
+PREFIXES = ['Mr.',
+            """Ol' """,
+            'Sir',
+            """Lil' Miss """,
+            'Madam ',
+            'Mrs. ',
+            'Prince ',
+            'Lady ',
+            'Princess ',
+            'King ',
+            'Queen ',
+            'Lord ',
+            'Dr. ',
+            'Chairman ',
+            'Professor ',
+            'Chairwoman ']
+
+SUFFIXES = [' Esq.',
+            ' Ph.D.',
+            ' the Third',
+            ' the Second',
+            ' the First',
+            ' the Fourth',
+            ' v2',
+            ' v3',
+            ' mk IV']
+
+LASTNAMES= [' Adams',
+            ' Jones',
+            ' Gallagher',
+            ' Pinkman',
+            ' Berger',
+            ' Rodriguez',
+            ' Jackson',
+            ' Lee',
+            ' Murphy',
+            ' Lardhi',
+            ' Kozlov',
+            ' Gomez',
+            ' Jefferson',
+            ' Summers',
+            ' Ball',
+            ' McGee',
+            ' Muncher',
+            ' Ivanov',
+            ' Abawi',
+            ' Tanaka',
+            ' Sawyer',
+            ' Boutlier',
+            ' Zimmerman',
+            ' Lopez',
+            ' Hardy',
+            ' DuPont',
+            ' Alvarez',
+            ' McKenzie',
+            ' Smith',
+            ' Magee',
+            ' Popov',
+            ' Campbell',
+            ' Nakamura',
+            ' Suzuki',
+            ' Kozak',
+            ' Wagner',
+            ' White',
+            ' Edwards',
+            ' Cat',
+            ' Chen',
+            ' Roy',
+            ' Pickles',
+            ' Schmidt',
+            ' Magillicutty',
+            ' Davis',
+            ' Fernandez',
+            ' MacDonald',
+            ' MacInnis',
+            ' Santos',
+            ' Catman',
+            ' Papageorgio',
+            ' Magoo',
+            ' Castro',
+            ' Bigglesworth',
+            ' Martinez',
+            ' Howard',
+            ' Perez',
+            ' Klein',
+            ' Cooper',
+            ' Baldwin',
+            ' Denver',
+            ' Idol',
+            ' Otto',
+            ' McIver',
+            ' Williams',
+            ' Callahan',
+            ' Thompson',
+            ' Leblanc',
+            ' Wang',
+            ' Tyson',
+            ' Jameal',
+            ' Johnson',
+            ' Winters',
+            ' Doolittle',
+            ' Clark',
+            ' Miller',
+            ' Robertson',
+            ' Sherwin',
+            ' DeJardan',
+            ' Martin',
+            ' Lund',
+            ' Federov',
+            ' Fischer',
+            ' Nakamoto',
+            ' Black']
+
+def name_has_prefix(name):
+    for prefix in PREFIXES:
+        if prefix in name:
+            return prefix
+    return ''
+
+
+def name_has_lastname(name):
+    for lastname in LASTNAMES:
+        if lastname in name:
+            return lastname
+    return ''
+
+
+def name_has_suffix(name):
+    for suffix in SUFFIXES:
+        if suffix in name:
+            return suffix
+    return ''
