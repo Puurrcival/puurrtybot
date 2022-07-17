@@ -1,0 +1,11 @@
+# Ignore Logs
+logs
+*.log
+
+# Ignore Pytohn Cache
+**/__pycache__/
+
+# Ignore the credentials directory
+**/credentials
+
+
