@@ -56,9 +56,6 @@ class WalletVerifier(commands.Cog):
                    ]
                       )
     async def verify_task(self, ctx:SlashContext, wallet:str):
-        quantity = pf.get_random_quantity()
-        #wallet_check = pbq.get_address_by_adahandle(wallet)
-        #pbq.verify_wallet_stats(ctx.author.id, wallet_check, quantity)
         wallet_check = bvw.get_address_by_adahandle(address=wallet)
         if wallet_check:
             check = dff.user_check_wallet_exists(ctx.author_id, wallet)
@@ -72,6 +69,7 @@ class WalletVerifier(commands.Cog):
     ⚠ Do not include any other tokens and make sure to send from (and to) the wallet that owns this address. Transactions that include outputs to any other addresses will not be considered and your fees will not be reimbursed by the operator of this Discord server.
 
     💡 If you close Discord, you can use /verify list to get your verification data later.""", hidden=HIDDEN_STATUS)
+            quantity = pf.get_random_quantity()
             self.task_launcher(ctx, wallet_check, quantity, seconds=60*5, count=12)
             await ctx.send(f'{ctx.author.mention} you started a wallet verification! \n Next check for transaction in <t:{int(datetime.datetime.now().timestamp())+60*5}:R>.', hidden=HIDDEN_STATUS)
         else:
