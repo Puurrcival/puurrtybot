@@ -4,7 +4,8 @@ from discord_slash.utils.manage_commands import create_option
 import random, datetime
 import puurrtybot.blockchain.verify_queries as pbq
 import puurrtybot.functions as pf
-#from puurrtybot.database import update_database as dud
+import puurrtybot.blockchain.verify_wallet as bvw
+import puurrtybot.databases.database_functions as dff
 
 HIDDEN_STATUS = True
 
@@ -18,11 +19,12 @@ class WalletVerifier(commands.Cog):
 
     async def static_loop(self, ctx, wallet, quantity, task_id, count):
         userid = ctx.author.id
-        check = pbq.verify_wallet(address=wallet, quantitiy=quantity)
+        check = bvw.verify_wallet(address=wallet, quantity=quantity)
         if check:
             await ctx.send(f"""{ctx.author.mention}, transaction found, your address is now verified: {wallet}""", hidden=HIDDEN_STATUS)
-            pbq.add_verified_wallet(userid = userid, address = wallet)
-            pbq.verify_wallet_stats(userid, address, quantity, status="True")
+            dff.user_add_wallet(userid, wallet)
+            dff.user_update_wallets(userid)
+            dff.user_update_assets(userid)
             self._tasks[task_id][0].cancel()
         else:
             print(f"""not verified {userid} {wallet}""")
@@ -31,7 +33,7 @@ class WalletVerifier(commands.Cog):
         self.counter[task_id] += 1
         if self.counter[task_id] > count:
             await ctx.send(f"""{ctx.author.mention}, verifying time exceeded.""", hidden=HIDDEN_STATUS)
-            #print('time exceeded')
+            print('time exceeded')
 
     def task_launcher(self, ctx, wallet:str, quantity, seconds=5, count=5):
         new_task = tasks.loop(seconds=seconds, count = count)(self.static_loop)
@@ -55,11 +57,12 @@ class WalletVerifier(commands.Cog):
                       )
     async def verify_task(self, ctx:SlashContext, wallet:str):
         quantity = pf.get_random_quantity()
-        wallet_check = pbq.get_address_by_adahandle(wallet)
-        pbq.verify_wallet_stats(ctx.author.id, wallet_check, quantity)
+        #wallet_check = pbq.get_address_by_adahandle(wallet)
+        #pbq.verify_wallet_stats(ctx.author.id, wallet_check, quantity)
+        wallet_check = bvw.get_address_by_adahandle(address=wallet)
         if wallet_check:
-            check = pbq.wallet_verify_status(userid = str(ctx.author_id), address = wallet_check)
-            if check:
+            check = dff.user_check_wallet_exists(ctx.author_id, wallet)
+            if not check:
                 await ctx.send(f"""{ctx.author.mention}, the address is verified: {wallet}""", hidden=HIDDEN_STATUS)
                 return None
 

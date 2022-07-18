@@ -35,8 +35,7 @@ def add_verified_wallet(userid, address):
     with open(f"""{puurrtybot.PATH}/puurrtybot/databases/users/{userid}.json""", 'r') as f:
         j = json.load(f)
 
-    j['verified_wallets']=f"""{j['verified_wallets']};{address}""".strip(';')
-    j['verified_wallets']=';'.join(set(j['verified_wallets'].split(';')))
+    j['verified_wallets'] = list(j['verified_wallets']) + address
     with open(f"""{puurrtybot.PATH}/puurrtybot/databases/users/{userid}.json""", "w") as f:
         json.dump(j, f)
 
@@ -50,7 +49,7 @@ def wallet_verify_status(userid, address):
             j = {"userid":f"{userid}","verified_wallets":""}
             json.dump(j, f)
 
-    if address in j['verified_wallets'].split(';'):
+    if address in j['verified_wallets']:
         return True
     else:
         return False
