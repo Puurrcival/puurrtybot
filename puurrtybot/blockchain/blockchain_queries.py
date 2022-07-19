@@ -56,3 +56,7 @@ def get_quantities_by_tx_hash(tx_hash: str, address: str):
         return [amount[0]['quantity'] for amount in list(output['amount'] for output in r.json()['outputs'])]
     else:
         return [0]
+
+
+def get_image_by_asset():
+    return True

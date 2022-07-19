@@ -62,7 +62,7 @@ def check_transaction_of_address(address, quantity, addresses):
     page = 1
     while True:
         r = requests.get(f'https://cardano-mainnet.blockfrost.io/api/v0/addresses/{address}/transactions?order=desc&page={page}', headers=headers).json()
-        if r and r[0]['block_time'] - int(datetime.datetime.now().timestamp()) + time_limit > 0:
+        if r and r[0]['block_time'] - int(datetime.datetime.utcnow().timestamp()) + time_limit > 0:
             for tx in r:
                 if check_if_quantity_in_tx(tx_hash=tx['tx_hash'], quantity=quantity, addresses=addresses):
                     return True
