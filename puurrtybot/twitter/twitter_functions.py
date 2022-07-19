@@ -45,4 +45,5 @@ def tweet_sale(content, asset):
 
     ret = api.media_upload(filename="dummy_string", file=b)
 
-    api.update_status(media_ids=[ret.media_id_string], status=content)
+    temp = api.update_status(media_ids=[ret.media_id_string], status=content)
+    return temp.id

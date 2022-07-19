@@ -28,7 +28,7 @@ class SalesManager(commands.Cog):
         one_sell = False
         for move in market_last_100['transactions'][::-1]:
             if move['tx_hash'] not in past_buys:
-                if move['action']=='BUY':
+                if move['action']=='BUY' and move['confirmed_at']:
                     timestamp = int(datetime.datetime.strptime(move['confirmed_at'].replace('T',' ').split('+',1)[0].split('.',1)[0], '%Y-%m-%d %H:%M:%S').timestamp())
                     if timestamp - int(datetime.datetime.utcnow().timestamp()) + 70*60 > 0:
                         timestamp = timestamp + 60*60*2
@@ -39,8 +39,8 @@ class SalesManager(commands.Cog):
                             f.write('')
                         #await channel.send(f"""{meta_name} sold for {ada}₳ at <t:{timestamp}:f>.""")
                         content=f"""{meta_name} just sold for {ada}₳!"""
-                        temp = ttf.tweet_sale(content, asset)
-                        await channel.send(f"""https://twitter.com/PuurrtyBot/status/{temp.id}""")
+                        tweet_id = ttf.tweet_sale(content, asset)
+                        await channel.send(f"""https://twitter.com/PuurrtyBot/status/{tweet_id}""")
                         print("sent tweet")
                         time.sleep(5)
         #if not one_sell:
