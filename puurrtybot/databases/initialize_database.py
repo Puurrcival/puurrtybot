@@ -16,7 +16,11 @@ def initialize_assets():
             asset['onchain_metadata']['firstname'] = asset['onchain_metadata']['name'].replace(asset['onchain_metadata']['prefix'],'').replace(lastname,'').replace(suffix,'').strip()
             asset['onchain_metadata']['lastname'] = lastname
             asset['onchain_metadata']['suffix'] = suffix
-        with open(f"""{puurrtybot.PATH}/puurrtybot/databases/assets/{asset['asset']}.json""", 'w') as f:
+            if asset['onchain_metadata']['prefix']=='' and asset['onchain_metadata']['lastname']=='' and asset['onchain_metadata']['suffix']=='':
+                asset['onchain_metadata']['singlename'] = asset['onchain_metadata']['firstname']
+            else:
+                asset['onchain_metadata']['singlename'] = ''
+        with open(f"""{puurrtybot.PATH}/puurrtybot/databases/assets_by_name/{asset['asset']}.json""", 'w') as f:
             json.dump(asset, f)
 
 
