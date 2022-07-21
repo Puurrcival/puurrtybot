@@ -4,6 +4,7 @@ from discord_slash import SlashCommand, SlashContext
 import puurrtybot.databases.database_functions as df
 import puurrtybot.databases.get_functions as dgf
 import puurrtybot.markets.market_queries as mmq
+import puurrtybot.functions as pf
 
 intents = discord.Intents.default()
 intents.members = True
@@ -24,6 +25,11 @@ async def ping(ctx):
     latency = bot.latency  # Included in the Discord.py library
     # Send it to the user
     await ctx.send(latency)
+
+@bot.command()
+async def search(ctx, *, text):
+    match = pf.query_asset(f"""{text}""")
+    await ctx.send(f"""{match}""")
 
 
 @bot.command()

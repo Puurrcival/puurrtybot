@@ -58,7 +58,7 @@ class SalesManager(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         channel = self.client.get_channel(999002600013836340)
-        self.task_launcher(channel, None, seconds=60)
+        self.task_launcher(channel, None, seconds=180)
 
 
 def setup(client):

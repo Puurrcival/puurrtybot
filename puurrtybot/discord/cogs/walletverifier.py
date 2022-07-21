@@ -1,11 +1,11 @@
 from discord.ext import commands, tasks
 from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
-import random, datetime
-import puurrtybot.blockchain.verify_queries as pbq
-import puurrtybot.functions as pf
-import puurrtybot.blockchain.verify_wallet as bvw
+import datetime
 import puurrtybot.databases.database_functions as dff
+import puurrtybot.walletverifier.wallet_verify as wwv
+import puurrtybot.blockfrost.blockfrost_queries as bbq
+
 
 HIDDEN_STATUS = True
 
@@ -17,34 +17,36 @@ class WalletVerifier(commands.Cog):
         self.task_n = 0
         self.counter = {}
         self.ctx_id = {}
+
+        self.verification = {}
         self.channel = self.client.get_channel(998321232208478219)
 
-    async def static_loop(self, userid, wallet, quantity, task_id, count):
+    async def static_loop(self, userid, count):
         ctx = self.ctx_id[userid]
-        check = bvw.verify_wallet(address=wallet, quantity=quantity)
+        check = self.verification[userid].verify_transaction()
+        wallet = self.verification[userid]
         if check:
             await ctx.send(f"""<@{userid}>, transaction found, your address is now verified: {wallet}""", hidden=HIDDEN_STATUS)
             dff.user_add_wallet(userid, wallet)
             dff.user_update_wallets(userid)
             dff.user_update_assets(userid)
             dff.user_update_traits(userid)
-            self._tasks[task_id][0].cancel()
+            self._tasks[userid][0].cancel()
         else:
             print(f"""not verified {userid} {wallet}""")
             await ctx.send(f"""... still looking for transaction. \n Next check for transaction <t:{int(datetime.datetime.now().timestamp())+60*5}:R>.""", hidden=HIDDEN_STATUS)
             self.ctx_id[userid] = ctx
 
-        self.counter[task_id] += 1
-        if self.counter[task_id] > count:
+        self.counter[userid] += 1
+        if self.counter[userid] > count:
             await ctx.send(f"""<@{userid}>, verifying time exceeded.""", hidden=HIDDEN_STATUS)
             print('time exceeded')
 
-    def task_launcher(self, userid, wallet:str, quantity, seconds=5, count=5):
+    def task_launcher(self, userid, wallet:str, amount, seconds=5, count=5):
         new_task = tasks.loop(seconds=seconds, count = count)(self.static_loop)
-        new_task.start(userid, wallet, quantity, self.task_n, count)
-        self._tasks[self.task_n] = (new_task, wallet, quantity, self.task_n)
-        self.counter[self.task_n] = 1
-        self.task_n += 1
+        new_task.start(userid, wallet, amount, count)
+        self._tasks[userid] = (new_task, wallet, amount)
+        self.counter[userid] = 1
         
 
     @cog_ext.cog_slash(
@@ -61,26 +63,22 @@ class WalletVerifier(commands.Cog):
                       )
     async def verify_task(self, ctx:SlashContext, wallet:str):
         userid = ctx.author_id
-        self.ctx_id[userid] = ctx
-        wallet_check = bvw.get_address_by_adahandle(address=wallet)
-        if wallet_check:
-            verified = dff.user_check_wallet_exists(userid, wallet_check)
-            if verified:
-                await ctx.send(f"""{ctx.author.mention}, the address is verified: {wallet}""", hidden=HIDDEN_STATUS)
-                return None
+        address = wallet.strip()
+        address = bbq.get_address_by_adahandle(address)
 
-            quantity = pf.get_random_quantity()
-            await ctx.send(f"""**Verify a new address** \n\n
-    ⌛ Please send **{quantity}₳** to your own address at **{wallet_check}** within the next 60 minutes.
-
-    ⚠ Make sure to send from (and to) the wallet that owns this address. In case of error your fees will not be reimbursed by the operator of this Discord server.
-
-    💡 If you close Discord, you can use /verify list to get your verification data later.""", hidden=HIDDEN_STATUS)
-            quantity = quantity = quantity.split(".")[0]+f"""{quantity.split(".")[1]}000000"""[:6]
-            self.task_launcher(userid, wallet_check, quantity, seconds=60*5, count=12)
+        if dff.user_check_wallet_exists(userid, address):
+            await ctx.send(f"""{ctx.author.mention}, you already verified this address: {address}""", hidden=HIDDEN_STATUS)
+        elif not bbq.check_address_exists(address):
+            await ctx.send(f"""{ctx.author.mention}, the entered address **{address}** **doesn't exist**. Please check the spelling and try again.""", hidden=HIDDEN_STATUS)
         else:
-            await ctx.send(f"""{ctx.author.mention}, the entered address **{wallet}** **doesn't exist**. Please check the spelling and try again.""", hidden=HIDDEN_STATUS)
-        
+            self.verification[userid] = wwv.WalletVerify(userid = userid, address = address)
+            self.ctx_id[userid] = ctx
+
+            amount = str(self.verification[userid].amount)
+            amount_formatted = f"""{amount[:1]}.{amount[1:]}"""
+
+            await ctx.send(f"""**Verify a new address** \n\n⌛ Please send **{amount_formatted}₳** to your own address at **{address}** within the next 60 minutes.\n\n⚠ Make sure to send from (and to) the wallet that owns this address. In case of error your fees will not be reimbursed by the operator of this Discord server.\n\n💡 If you close Discord, you can use /verify list to get your verification data later.""", hidden=HIDDEN_STATUS)
+            self.task_launcher(userid, address, amount, seconds=60*5, count=12)
     
     #@tasks.loop(seconds=900) 
     #async def update_database(self):

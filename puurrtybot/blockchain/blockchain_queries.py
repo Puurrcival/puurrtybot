@@ -36,6 +36,13 @@ def get_addr_by_asset(asset):
     return  requests.get(f'https://cardano-mainnet.blockfrost.io/api/v0/assets/{asset}/addresses', headers=headers).json()[0]['address']
 
 
+def get_stake_by_address(address):
+    try:
+        return requests.get(f'https://cardano-mainnet.blockfrost.io/api/v0/addresses/{address}', headers=headers).json()['stake_address']
+    except KeyError:
+        return address
+
+
 def get_tx_list_by_address(address: str):
     tx_list = []
     page = 1
@@ -56,7 +63,4 @@ def get_quantities_by_tx_hash(tx_hash: str, address: str):
         return [amount[0]['quantity'] for amount in list(output['amount'] for output in r.json()['outputs'])]
     else:
         return [0]
-
-
-def get_image_by_asset():
-    return True
+        
