@@ -30,7 +30,7 @@ def get_server_time() -> int:
 
 
 # https://docs.blockfrost.io/#tag/Cardano-Assets/paths/~1assets~1policy~1{policy_id}/get
-def get_asset_list_by_policy(policy: str, order: str = 'asc', max_pages: int = 0, quantity: int = 1) -> list:
+def get_asset_list_by_policy(policy: str, order: str = 'asc', max_pages: int = -1, quantity: int = 1) -> list:
     page = 1 
     asset_list = []
     while max_pages != page-1:

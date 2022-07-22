@@ -23,6 +23,19 @@ def get_asset_image(asset: str, basewidth: int = 1200, stream: bool = True):
 
 
 def get_asset_sale_histoy(asset):
+    try:
+        sales = puurrtybot.ASSETS_SALES_HISTORY[asset]
+        volume = sum(sales)
+        highest = max(sales)
+        lowest = min(sales)
+        traded = len(sales)
+        last = sales[-1]
+    except KeyError:
+        traded = volume = highest = lowest = 0
+        last = None
+    return {'traded':traded, 'volume':volume, 'last':last,'highest':highest, 'lowest':lowest}
+
+def get_asset_sale_histoy_old(asset):
     sale_history = requests.get(f"""https://server.jpgstoreapis.com/token/{asset}/price-history""").json()
     try:
         sales = [sale['min_sale_price'] for sale in sale_history]

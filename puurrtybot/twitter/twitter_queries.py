@@ -1,4 +1,4 @@
-import datetime, puurrtybot, requests
+import datetime, puurrtybot, requests, puurrtybot.databases.database_functions as ddf
 headers = {"Authorization": "Bearer {}".format(puurrtybot.TWITTER_BEARER_TOKEN)}
 network = 'https://api.twitter.com/2'
 
@@ -41,3 +41,26 @@ def get_conversation_by_conversation_id(conversation_id: str):
 
 def get_reply_from_to(from_user, to_user):
     return requests.request("GET", f"""{network}/tweets/search/recent?query=from:{from_user} to:{to_user}&tweet.fields=author_id,created_at""", headers=headers).json()
+
+
+def get_mentions_puurrtycats():
+        return requests.request("GET", f"""https://api.twitter.com/2/users/1479912806866694149/mentions?tweet.fields=in_reply_to_user_id,author_id""", headers=headers).json()
+
+
+def get_untracked_mentions_puurrtycats():
+    untracked_mentions = []
+    try:
+        tweets = get_mentions_puurrtycats()['data']
+        for tweet in tweets:
+            try:
+                tweet['in_reply_to_user_id']
+            except KeyError:
+                try:
+                    puurrtybot.TWITTER_MENTIONS[tweet['id']]
+                except KeyError:
+                    untracked_mentions.append(tweet)
+            puurrtybot.TWITTER_MENTIONS[tweet['id']] = tweet
+        ddf.save_twitter_mentions()
+    except KeyError:
+        pass        
+    return untracked_mentions

@@ -1,4 +1,44 @@
-import os, puurrtybot, requests, datetime
+import os, puurrtybot, requests, datetime, puurrtybot.functions as pf, puurrtybot.databases.database_functions as ddf
+
+
+def get_untracked_sales_jpgstore():
+    page = 1
+    last_sale = requests.get(f"""https://server.jpgstoreapis.com/collection/{puurrtybot.POLICY}/transactions?page={page}&count=1""").json()
+    untracked_sales = []
+
+    try:
+        puurrtybot.MARKET_SALES_TX_HASH[last_sale['transactions'][0]['tx_hash']]
+    except KeyError:
+        untracked = True
+        while untracked:
+            sales = requests.get(f"""https://server.jpgstoreapis.com/collection/{puurrtybot.POLICY}/transactions?page={page}&count=10""").json()['transactions']
+            for sale in sales:
+                try:
+                    puurrtybot.MARKET_SALES_TX_HASH[sale['tx_hash']]
+                    untracked = False
+                    break;
+                except KeyError:
+                    untracked_sales.append(sale)
+            page+=1
+
+        for i,sale in enumerate(untracked_sales):
+            if sale['action'] in ['BUY','ACCEPT_OFFER']:
+                timestamp = pf.time_to_timestamp(sale['confirmed_at'].split('.')[0].split('+')[0].replace('T',' '))
+                amount = int(sale['amount_lovelace'])/1_000_000
+                untracked_sales[i] = {'tx_hash':sale['tx_hash'], 'timestamp':timestamp, 'asset':sale['asset_id'], 'amount':amount, 'market':'jpgstore'}
+                puurrtybot.MARKET_SALES_TX_HASH[sale['tx_hash']] = True
+                try:
+                    puurrtybot.ASSETS_SALES_HISTORY[sale['asset_id']].append(amount)
+                except KeyError:
+                    puurrtybot.ASSETS_SALES_HISTORY[sale['asset_id']] = [amount]
+            else:
+                del untracked_sales[i]
+
+        ddf.save_asset_sales_history()
+        ddf.save_market_sale()
+    return untracked_sales
+
+
 
 def check_sales(ctx):
     market_last_100 = requests.get("""https://server.jpgstoreapis.com/collection/f96584c4fcd13cd1702c9be683400072dd1aac853431c99037a3ab1e/transactions?page=1&count=100""").json()

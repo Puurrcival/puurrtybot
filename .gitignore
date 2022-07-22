@@ -1,7 +1,7 @@
 # Ignore Logs
 logs
 *.log
-**.egg-info
+*.egg-info
 
 # Ignore Cache
 **/__pycache__/
@@ -10,7 +10,7 @@ logs
 **/credentials
 
 #Ignore Databases
-**/databases
+*.json
 
 #Ignore Notebooks
 /notebooks
