@@ -9,8 +9,11 @@ logs
 # Ignore the credentials directory
 **/credentials
 
-#Ignore Databases
+# Ignore Databases
 *.json
 
-#Ignore Notebooks
-/notebooks
+# Ignore Notebooks
+**/notebooks/**
+
+# Ignore local files
+**.code-workspace
