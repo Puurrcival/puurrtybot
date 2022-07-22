@@ -19,6 +19,11 @@ blockfrost_http_codes = {
     500: """return code is used when our endpoints are having a problem."""}
 
 
+def blockfrost_check_response(status):
+    if status != 200:
+        raise Exception(f"""{blockfrost_http_codes[status]}""")
+
+
 # https://docs.blockfrost.io/#tag/Health/paths/~1health~1clock/get
 def get_server_time() -> int:
     return int(requests.get(f"""{network}/health/clock""", headers = headers).json()['server_time']/1000)
@@ -28,7 +33,7 @@ def get_server_time() -> int:
 def get_asset_list_by_policy(policy: str, order: str = 'asc', max_pages: int = 0, quantity: int = 1) -> list:
     page = 1 
     asset_list = []
-    while max_pages != page:
+    while max_pages != page-1:
         response = requests.get(f"""{network}/assets/policy/{policy}?order={order}&page={page}""", headers=headers)
         query_result = response.json()
         if len(query_result) > 0:

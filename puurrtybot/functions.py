@@ -1,4 +1,8 @@
 import random, datetime
+def time_to_timestamp(timeformat):
+    return int(datetime.datetime.strptime(timeformat,"%Y-%m-%d %H:%M:%S").replace(tzinfo=datetime.timezone.utc).timestamp())
+
+
 def get_utc_time():
     return int(datetime.datetime.now(datetime.timezone.utc).timestamp())
 

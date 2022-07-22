@@ -14,10 +14,8 @@ class WalletVerifier(commands.Cog):
     def __init__(self, client):
         self.client = client
         self._tasks = {} 
-        self.task_n = 0
         self.counter = {}
         self.ctx_id = {}
-
         self.verification = {}
         self.channel = self.client.get_channel(998321232208478219)
 
@@ -31,7 +29,7 @@ class WalletVerifier(commands.Cog):
             dff.user_update_wallets(userid)
             dff.user_update_assets(userid)
             dff.user_update_traits(userid)
-            self._tasks[userid][0].cancel()
+            self._tasks[userid].cancel()
         else:
             print(f"""not verified {userid} {wallet}""")
             await ctx.send(f"""... still looking for transaction. \n Next check for transaction <t:{int(datetime.datetime.now().timestamp())+60*5}:R>.""", hidden=HIDDEN_STATUS)
@@ -42,27 +40,30 @@ class WalletVerifier(commands.Cog):
             await ctx.send(f"""<@{userid}>, verifying time exceeded.""", hidden=HIDDEN_STATUS)
             print('time exceeded')
 
-    def task_launcher(self, userid, wallet:str, amount, seconds=5, count=5):
-        new_task = tasks.loop(seconds=seconds, count = count)(self.static_loop)
-        new_task.start(userid, wallet, amount, count)
-        self._tasks[userid] = (new_task, wallet, amount)
+    def task_launcher(self, userid, seconds, count):
+        new_task = tasks.loop(seconds = seconds, count = count)(self.static_loop)
+        new_task.start(userid, count)
+        self._tasks[userid] = new_task
         self.counter[userid] = 1
         
 
     @cog_ext.cog_slash(
         name = "verify_wallet",
         description = "verify_wallet",
-        #guild_ids = [998321232208478219],
         options = [
-        create_option(
-                        name="wallet",
-                        description="wallet address",
-                        required=True,
-                        option_type=3)
+            create_option(
+                            name="wallet",
+                            description="wallet address",
+                            required=True,
+                            option_type=3)
                    ]
                       )
     async def verify_task(self, ctx:SlashContext, wallet:str):
         userid = ctx.author_id
+        try:    
+            self._tasks[userid].cancel()
+        except KeyError:
+            pass
         address = wallet.strip()
         address = bbq.get_address_by_adahandle(address)
 
@@ -78,18 +79,8 @@ class WalletVerifier(commands.Cog):
             amount_formatted = f"""{amount[:1]}.{amount[1:]}"""
 
             await ctx.send(f"""**Verify a new address** \n\n⌛ Please send **{amount_formatted}₳** to your own address at **{address}** within the next 60 minutes.\n\n⚠ Make sure to send from (and to) the wallet that owns this address. In case of error your fees will not be reimbursed by the operator of this Discord server.\n\n💡 If you close Discord, you can use /verify list to get your verification data later.""", hidden=HIDDEN_STATUS)
-            self.task_launcher(userid, address, amount, seconds=60*5, count=12)
+            self.task_launcher(userid, seconds=60*5, count=12)
     
-    #@tasks.loop(seconds=900) 
-    #async def update_database(self):
-    #    print('update database')
-    #    pdq.verify_clean_outdated()
-    #    dud.update_wallet_assets(user_id=str(642352900357750787) , address="addr1qyqggc5f3dgyx6ulwl4uqf8gucxvdahgpatjx27hutsusg79nee6glazchetycv3uewpraf7tfe60t3kud5l0cdkl5wqyj5xhy")
-        
-        
-    #@commands.Cog.listener()
-    #async def on_ready(self):
-    #    await self.update_database.start()
 
 def setup(client):
     client.add_cog(WalletVerifier(client))

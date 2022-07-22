@@ -2,6 +2,7 @@ import configparser, tweepy, puurrtybot
 from PIL import Image
 import requests, puurrtybot, json
 from io import BytesIO
+import puurrtybot.assets.get_functions as agf
 
 def resize_image(img, basewidth=1200):
     wpercent = (basewidth/float(img.size[0]))
@@ -31,19 +32,9 @@ def tweet(content):
 
 
 def tweet_sale(content, asset):
-    asset_dir = f"""{puurrtybot.PATH}/puurrtybot/databases/assets_by_name/"""
-    with open(f"""{asset_dir}{asset}.json""", 'r') as openfile:
-        asset = json.load(openfile)
-        
-    image_url = f"""https://cloudflare-ipfs.com/ipfs/{asset['onchain_metadata']['image'].split('/')[-1]}"""
+    image_stream = agf.get_asset_image(asset)
 
-    image = resize_image(Image.open(BytesIO(requests.get(image_url).content)))
-
-    b = BytesIO()
-    image.save(b, "PNG")
-    b.seek(0)
-
-    ret = api.media_upload(filename="dummy_string", file=b)
+    ret = api.media_upload(filename="cat", file=image_stream)
 
     temp = api.update_status(media_ids=[ret.media_id_string], status=content)
     return temp.id
