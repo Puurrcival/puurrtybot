@@ -26,18 +26,27 @@ def get_asset_image(asset: str, basewidth: int = 1200, stream: bool = True):
         return image
 
 
-def get_asset_sale_histoy(asset):
+def get_asset_sale_history(asset):
     try:
-        sales = puurrtybot.ASSETS_SALES_HISTORY[asset]
+        sales = puurrtybot.ASSETS_SALES_HISTORY[asset]['amounts']
+        timestamps = puurrtybot.ASSETS_SALES_HISTORY[asset]['timestamps']
         volume = sum(sales)
         highest = max(sales)
         lowest = min(sales)
         traded = len(sales)
         last = sales[-1]
-    except KeyError:
+        last_time = timestamps[-1]
+        if len(sales)>1:
+            bought = sales[-2]
+            bought_time = timestamps[-2]
+        else:
+            bought = bought_time = None
+    except (KeyError, IndexError):
         traded = volume = highest = lowest = 0
-        last = None
-    return {'traded':traded, 'volume':volume, 'last':last,'highest':highest, 'lowest':lowest}
+        last = bought = last_time = bought_time = None
+
+    return {'traded':traded, 'volume':volume, 'last':last,'highest':highest, 'lowest':lowest, 'bought':bought, 'last_time':last_time, 'bought_time':bought_time}
+
 
 def get_asset_sale_histoy_old(asset):
     sale_history = requests.get(f"""https://server.jpgstoreapis.com/token/{asset}/price-history""").json()

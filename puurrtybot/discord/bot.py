@@ -28,16 +28,16 @@ async def ping(ctx):
 
 @bot.command()
 async def search(ctx, *, text):
-    match = pf.query_asset(f"""{text}""")
-    #print(f"""https://{agf.get_asset_image_url(match[1])}""")
-    if match:
-        sale_history = agf.get_asset_sale_histoy(match[1])
+    try:
+        match = pf.query_asset(f"""{text}""")
+        #print(f"""https://{agf.get_asset_image_url(match[1])}""")
+        sale_history = agf.get_asset_sale_history(match[1])
         #image = agf.get_asset_image(match[1], basewidth = 120)
 
         embed=discord.Embed(title=f"""**{match[0]}**""", url=f"""https://www.jpg.store/asset/{match[1]}""", description="", color=0x109319)
 
         # Add author, thumbnail, fields, and footer to the embed
-        #embed.set_author(name="PuurrtyBot", url="https://twitter.com/RealDrewData", icon_url="https://pbs.twimg.com/profile_images/1327036716226646017/ZuaMDdtm_400x400.jpg")
+        #embed.set_author(name="PuurrtyBot", url="https://infura-ipfs.io/ipfs/QmXdUjTyPEvPAnRk5Nc1TCje7JhLvrx1F45U3oS2YLWQ74")
 
         embed.set_thumbnail(url=f"""https://infura-ipfs.io/ipfs/{agf.get_asset_image_url(match[1]).split('/')[-1]}""")
 
@@ -49,14 +49,8 @@ async def search(ctx, *, text):
         embed.set_footer(text="")
         #await ctx.send(content = f"""{match}\n{sale_history}""", file=discord.File(fp=image, filename='cat.png'))
         await ctx.send(embed=embed)
-    else:
-        await ctx.send(f"""{match}""")
-
-
-
-        
-
-
+    except KeyError:
+        await ctx.send(f"""Couldn't find a cat with that name.""")
 
 
 @bot.command()

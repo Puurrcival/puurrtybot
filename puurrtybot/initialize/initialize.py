@@ -37,9 +37,12 @@ def initialize_asset_sales_history_json():
     puurrtybot.ASSETS_SALES_HISTORY = {}
     for sale in puurrtybot.MARKET_SALES:
         try:
-            puurrtybot.ASSETS_SALES_HISTORY[sale['asset']].append(sale['amount'])
+            puurrtybot.ASSETS_SALES_HISTORY[sale['asset']]['amounts'].append(sale['amount'])
+            puurrtybot.ASSETS_SALES_HISTORY[sale['asset']]['timestamps'].append(sale['timestamp'])
         except KeyError:
-            puurrtybot.ASSETS_SALES_HISTORY[sale['asset']] =  [sale['amount']]
+            puurrtybot.ASSETS_SALES_HISTORY[sale['asset']] = {}
+            puurrtybot.ASSETS_SALES_HISTORY[sale['asset']]['amounts'] =  [sale['amount']]
+            puurrtybot.ASSETS_SALES_HISTORY[sale['asset']]['timestamps'] =  [sale['timestamp']]
     with open(f"""{puurrtybot.DATABASES_DIR}/assets_sales_history.json""", 'w') as json_file:
         json.dump(puurrtybot.ASSETS_SALES_HISTORY, json_file)
 

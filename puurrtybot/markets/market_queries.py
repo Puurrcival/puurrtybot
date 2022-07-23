@@ -28,9 +28,12 @@ def get_untracked_sales_jpgstore():
                 untracked_sales[i] = {'tx_hash':sale['tx_hash'], 'timestamp':timestamp, 'asset':sale['asset_id'], 'amount':amount, 'market':'jpgstore'}
                 puurrtybot.MARKET_SALES_TX_HASH[sale['tx_hash']] = True
                 try:
-                    puurrtybot.ASSETS_SALES_HISTORY[sale['asset_id']].append(amount)
+                    puurrtybot.ASSETS_SALES_HISTORY[sale['asset']]['amounts'].append(amount)
+                    puurrtybot.ASSETS_SALES_HISTORY[sale['asset']]['timestamps'].append(timestamp)
                 except KeyError:
-                    puurrtybot.ASSETS_SALES_HISTORY[sale['asset_id']] = [amount]
+                    puurrtybot.ASSETS_SALES_HISTORY[sale['asset']] = {}
+                    puurrtybot.ASSETS_SALES_HISTORY[sale['asset']]['amounts'] =  [amount]
+                    puurrtybot.ASSETS_SALES_HISTORY[sale['asset']]['timestamps'] =  [timestamp]
             else:
                 del untracked_sales[i]
 
