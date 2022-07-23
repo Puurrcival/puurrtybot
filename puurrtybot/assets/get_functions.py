@@ -46,27 +46,3 @@ def get_asset_sale_history(asset):
         last = bought = last_time = bought_time = None
 
     return {'traded':traded, 'volume':volume, 'last':last,'highest':highest, 'lowest':lowest, 'bought':bought, 'last_time':last_time, 'bought_time':bought_time}
-
-
-def get_asset_sale_histoy_old(asset):
-    sale_history = requests.get(f"""https://server.jpgstoreapis.com/token/{asset}/price-history""").json()
-    try:
-        sales = [sale['min_sale_price'] for sale in sale_history]
-    except KeyError:
-        sales = [0]
-    if sales:
-        volume = sum(sales)
-        highest = max(sales)
-        lowest = min(sales)
-        traded = len(sales)
-    else:
-        traded = volume = highest = lowest = 0
-    try:
-        last = sales[-1]
-    except IndexError:
-        last = None
-    try:
-        previous = sale_history[-2]['min_sale_price']
-    except (IndexError, KeyError):
-        previous = None
-    return {'traded':traded, 'volume':volume, 'last':last, 'previous':previous, 'highest':highest, 'lowest':lowest}
