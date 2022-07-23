@@ -13,7 +13,7 @@ logs
 *.json
 
 # Ignore Notebooks
-**/notebooks/**
+**/notebooks
 
 # Ignore local files
 **.code-workspace

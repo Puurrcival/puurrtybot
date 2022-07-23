@@ -1,6 +1,6 @@
 import puurrtybot, tqdm, os, json, requests
 import puurrtybot.blockfrost.blockfrost_queries as blockfrost
-import puurrtybot.blockchain.meta as meta
+import puurrtybot.assets.meta as meta
 import puurrtybot.twitter.twitter_queries as tvt
 headers = {'project_id': puurrtybot.BLOCKFROST_TOKEN}
 

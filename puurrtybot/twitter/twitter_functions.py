@@ -1,13 +1,4 @@
-import configparser, tweepy, puurrtybot
-from PIL import Image
-import requests, puurrtybot, json
-from io import BytesIO
-import puurrtybot.assets.get_functions as agf
-
-def resize_image(img, basewidth=1200):
-    wpercent = (basewidth/float(img.size[0]))
-    hsize = int((float(img.size[1])*float(wpercent)))
-    return img.resize((basewidth,hsize), Image.ANTIALIAS)
+import configparser, tweepy, puurrtybot, puurrtybot.assets.get_functions as agf, puurrtybot.functions as pf
 
 # read config
 config = configparser.ConfigParser()

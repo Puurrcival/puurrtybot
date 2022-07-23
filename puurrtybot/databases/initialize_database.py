@@ -1,6 +1,6 @@
 import puurrtybot, tqdm, json
 import puurrtybot.blockchain.blockchain_queries as blockfrost
-import puurrtybot.blockchain.meta as meta
+import puurrtybot.assets.meta as meta
 
 
 def initialize_assets():

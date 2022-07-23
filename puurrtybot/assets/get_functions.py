@@ -3,6 +3,10 @@ from io import BytesIO
 from PIL import Image
 
 
+def get_asset_name(asset: str):
+    return puurrtybot.ASSETS[asset]['onchain_metadata']['name']
+
+
 def get_asset_image_url(asset: str):
     return puurrtybot.ASSETS[asset]['onchain_metadata']['image']
 
