@@ -4,7 +4,7 @@ import puurrtybot, requests, puurrtybot.functions as pf, puurrtybot.databases.da
 def get_untracked_sales_jpgstore():
     page = 1
     last_sale = requests.get(f"""https://server.jpgstoreapis.com/collection/{puurrtybot.POLICY}/transactions?page={page}&count=1""").json()
-    untracked_sales = []
+    untracked_sales = {}
 
     try:
         puurrtybot.MARKET_SALES_TX_HASH[last_sale['transactions'][0]['tx_hash']]
@@ -18,14 +18,14 @@ def get_untracked_sales_jpgstore():
                     untracked = False
                     break;
                 except KeyError:
-                    untracked_sales.append(sale)
+                    untracked_sales[sale['tx_hash']]= sale
             page+=1
 
-        for i,sale in enumerate(untracked_sales):
+        for tx_hash,sale in untracked_sales.items():
             if sale['action'] in ['BUY','ACCEPT_OFFER'] and sale['confirmed_at']:
                 timestamp = pf.time_to_timestamp(sale['confirmed_at'].split('.')[0].split('+')[0].replace('T',' '))
                 amount = int(sale['amount_lovelace'])/1_000_000
-                untracked_sales[i] = {'tx_hash':sale['tx_hash'], 'timestamp':timestamp, 'asset':sale['asset_id'], 'amount':amount, 'market':'jpgstore'}
+                untracked_sales[tx_hash] = {'tx_hash':sale['tx_hash'], 'timestamp':timestamp, 'asset':sale['asset_id'], 'amount':amount, 'market':'jpgstore'}
                 puurrtybot.MARKET_SALES_TX_HASH[sale['tx_hash']] = True
                 try:
                     print('try saving', amount, sale['asset_id'])
@@ -37,7 +37,8 @@ def get_untracked_sales_jpgstore():
                     puurrtybot.ASSETS_SALES_HISTORY[sale['asset_id']]['amounts'] =  [amount]
                     puurrtybot.ASSETS_SALES_HISTORY[sale['asset_id']]['timestamps'] =  [timestamp]
             else:
-                del untracked_sales[i]
+                untracked_sales[tx_hash] = None
+        untracked_sales = [sale for tx_hash, sale in untracked_sales.items() if sale]
         if untracked_sales:
             ddf.save_asset_sales_history()
             ddf.save_market_sale()

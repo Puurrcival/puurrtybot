@@ -12,7 +12,6 @@ class SalesTracker(commands.Cog):
         new_sales = mmq.get_untracked_sales_jpgstore()
 
         for sale in new_sales:
-            print(sale)
             display_name = puurrtybot.ASSETS[sale['asset']]['onchain_metadata']['name']
 
             asset_sales_history = agf.get_asset_sale_history(sale['asset'])
