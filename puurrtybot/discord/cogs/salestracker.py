@@ -21,16 +21,16 @@ class SalesTracker(commands.Cog):
                 last_time = datetime.datetime.utcfromtimestamp(asset_sales_history['last_time'])
                 bought_time = datetime.datetime.utcfromtimestamp(asset_sales_history['bought_time'])
                 hodl = last_time - bought_time
-                minutes, seconds, _ = str(datetime.timedelta(seconds=hodl.seconds)).split(':')
+                hours, minutes, _ = str(datetime.timedelta(seconds=hodl.seconds)).split(':')
 
                 if int(hodl.days) != 0:
                     days = f"""{hodl.days} days, """
                 else:
                     days = ""
-                if int(minutes) != 0:
-                    minutes = f"""{minutes} minutes and """
+                if int(hours) != 0:
+                    hours = f"""{int(hours)} hours and """
                 else:
-                    minutes = ""   
+                    hours = ""   
                 diff = asset_sales_history['last'] - asset_sales_history['bought']
                 percentage = 100/asset_sales_history['bought']*asset_sales_history['last']
                 if diff  < 0:
@@ -39,7 +39,7 @@ class SalesTracker(commands.Cog):
                     profit = f"""📈 Seller took a profit of {diff}₳ ({round(percentage-100, 2)}%)."""
 
                 bought_string = f"""\n\n🛒 Seller bought for {asset_sales_history['bought']}₳."""
-                hodl_string = f"""\n💰 Seller hodl for {days}{minutes}{seconds} seconds."""
+                hodl_string = f"""\n💰 Seller hodl for {days}{hours}{int(minutes)} seconds."""
                 content_detail = f"""{bought_string}{hodl_string}\n{profit}\n"""
             else:
                 content_detail = ""
