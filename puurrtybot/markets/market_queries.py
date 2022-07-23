@@ -38,7 +38,7 @@ def get_untracked_sales_jpgstore():
                     puurrtybot.ASSETS_SALES_HISTORY[sale['asset_id']]['timestamps'] =  [timestamp]
             else:
                 untracked_sales[tx_hash] = None
-        untracked_sales = [sale for tx_hash, sale in untracked_sales.items() if sale]
+        untracked_sales = [sale for _, sale in untracked_sales.items() if sale]
         if untracked_sales:
             ddf.save_asset_sales_history()
             ddf.save_market_sale()
