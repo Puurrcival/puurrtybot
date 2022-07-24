@@ -9,6 +9,10 @@ def time_to_timestamp(timeformat):
     return int(datetime.datetime.strptime(timeformat,"%Y-%m-%d %H:%M:%S").replace(tzinfo=datetime.timezone.utc).timestamp())
 
 
+def timestamp_to_utctime(timestamp):
+    return str(datetime.datetime.utcfromtimestamp(timestamp))
+
+
 def get_utc_time():
     return int(datetime.datetime.now(datetime.timezone.utc).timestamp())
 

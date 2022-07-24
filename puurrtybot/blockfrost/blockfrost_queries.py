@@ -26,7 +26,8 @@ def blockfrost_check_response(status):
 
 # https://docs.blockfrost.io/#tag/Health/paths/~1health~1clock/get
 def get_server_time() -> int:
-    return int(requests.get(f"""{network}/health/clock""", headers = headers).json()['server_time']/1000)
+    response = requests.get(f"""{network}/health/clock""", headers = headers)
+    return int(response.json()['server_time']/1000)
 
 
 # https://docs.blockfrost.io/#tag/Cardano-Assets/paths/~1assets~1policy~1{policy_id}/get
@@ -76,7 +77,7 @@ def get_address_list_by_stake_address(stake_address: str) -> list:
 
 
 # https://docs.blockfrost.io/#tag/Cardano-Addresses/paths/~1addresses~1{address}~1transactions/get
-def get_tx_hash_list_by_address(address: str, order: str = 'desc', max_pages: int = 0, past_time: int = 1*1*60*60) -> list:
+def get_tx_hash_list_by_address(address: str, order: str = 'desc', max_pages: int = 0, past_time: int = 1*1*60*60, hash_only: bool = True) -> list:
     time_window = get_server_time() - past_time
     tx_hash_list = []
     page = 1
@@ -88,7 +89,10 @@ def get_tx_hash_list_by_address(address: str, order: str = 'desc', max_pages: in
             page += 1
         else:
             break;
-    return [tx_hash['tx_hash'] for tx_hash in tx_hash_list]
+    if hash_only:
+        return [tx_hash['tx_hash'] for tx_hash in tx_hash_list]
+    else:
+        return [tx_hash for tx_hash in tx_hash_list]
 
 
 # https://docs.blockfrost.io/#tag/Cardano-Transactions/paths/~1txs~1{hash}~1utxos/get
@@ -104,6 +108,12 @@ def get_address_by_adahandle(address: str) -> str:
         asset = f"""f0ff48bbb7bbe9d59a40f1ce90e9e9d0ff5002ec48f232b49ca0fb9a{binascii.hexlify(bytes(adahandle, 'utf-8')).decode('utf-8')}"""
         address = get_address_by_asset(asset)
     return address.strip()
+
+
+
+def get_tx_by_tx_hash(tx_hash):
+    response = requests.get(f"""{network}/txs/{tx_hash}""", headers=headers)
+    return response.json()
 
 
 def check_address_exists(address: str) -> bool:

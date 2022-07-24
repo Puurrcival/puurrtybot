@@ -1,4 +1,4 @@
-import puurrtybot, os, discord
+import puurrtybot, os, discord, datetime
 from discord.ext import commands
 from discord_slash import SlashCommand, SlashContext
 import puurrtybot.databases.database_functions as df
@@ -45,6 +45,7 @@ async def search(ctx, *, text):
         embed.add_field(name="Lowest", value=f"""{sale_history['lowest']} ₳""", inline=True)
         embed.add_field(name="Highest", value=f"""{sale_history['highest']} ₳""", inline=True)
         embed.add_field(name="Volume", value=f"""{sale_history['volume']} ₳""", inline=True)
+        embed.add_field(name=f"""Minted""", value=f"""For {puurrtybot.ASSETS[match[1]]['mint_price']}₳ at {pf.timestamp_to_utctime(puurrtybot.ASSETS[match[1]]['mint_time'])} UTC.""", inline=False)
 
         embed.set_footer(text="")
         #await ctx.send(content = f"""{match}\n{sale_history}""", file=discord.File(fp=image, filename='cat.png'))

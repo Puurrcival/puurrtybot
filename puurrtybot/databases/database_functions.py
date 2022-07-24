@@ -28,7 +28,7 @@ def update_addresses_assets():
     asset_dir = f"""{puurrtybot.PATH}/puurrtybot/databases/assets_by_name/"""
     for asset in os.listdir(asset_dir):
         asset = asset.split('.')[0]
-        address = get_address_by_asset(asset)
+        address = blockfrost.get_address_by_asset(asset)
         try:
             addresses[address]+=[asset]
         except KeyError:
@@ -101,7 +101,7 @@ def user_update_wallets(userid):
 
     for wallet in check_wallets:
         if wallet not in checked_wallets:
-            checked_wallets += bvw.get_addresses_by_address(wallet).keys()
+            checked_wallets += blockfrost.get_addresses_by_address(wallet).keys()
 
     check_wallets = []
     stakes = []
@@ -199,6 +199,11 @@ def user_update_traits(userid):
 
 
 ###### new
+def save_assets():
+    with open(f"""{puurrtybot.DATABASES_DIR}/assets.json""", 'w') as json_file:
+            json.dump(puurrtybot.ASSETS, json_file)
+
+
 def save_market_sale():
     with open(f"""{puurrtybot.DATABASES_DIR}/market_sales.json""", 'w') as json_file:
             json.dump(puurrtybot.MARKET_SALES, json_file)
