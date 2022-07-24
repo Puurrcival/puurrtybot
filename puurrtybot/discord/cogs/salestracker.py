@@ -20,7 +20,7 @@ class SalesTracker(commands.Cog):
                 bought_time = datetime.datetime.utcfromtimestamp(asset_sales_history['bought_time'])
             else:
                 asset_sales_history['bought'] = puurrtybot.ASSETS[sale['asset']]['mint_price']
-                bought_mint = "🪄 Seller minted"
+                bought_mint = "⚒️ Seller minted"
                 bought_time = datetime.datetime.utcfromtimestamp(puurrtybot.ASSETS[sale['asset']]['mint_time'])
 
             diff = asset_sales_history['last'] - asset_sales_history['bought']
@@ -56,6 +56,7 @@ class SalesTracker(commands.Cog):
             await self.channel.send(f"""https://twitter.com/PuurrtyBot/status/{tweet_id}""")
             print("sent sale tweet")
             time.sleep(1)
+
 
     @commands.Cog.listener()
     async def on_ready(self):

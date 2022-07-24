@@ -34,11 +34,11 @@ def get_asset_sale_history(asset):
         highest = max(sales)
         lowest = min(sales)
         traded = len(sales)
-        last = sales[-1]
-        last_time = timestamps[-1]
+        last = sales[0]
+        last_time = timestamps[0]
         if len(sales)>1:
-            bought = sales[-2]
-            bought_time = timestamps[-2]
+            bought = sales[1]
+            bought_time = timestamps[1]
         else:
             bought = bought_time = None
     except (KeyError, IndexError):
