@@ -17,14 +17,15 @@ class SalesTracker(commands.Cog):
             asset_sales_history = agf.get_asset_sale_history(sale['asset'])
             if asset_sales_history['bought']:
                 bought_mint = "🛒 Seller bought"
+                bought_time = datetime.datetime.utcfromtimestamp(asset_sales_history['bought_time'])
             else:
                 asset_sales_history['bought'] = puurrtybot.ASSETS[sale['asset']]['mint_price']
                 bought_mint = "🪄 Seller minted"
-                
+                bought_time = datetime.datetime.utcfromtimestamp(puurrtybot.ASSETS[sale['asset']]['mint_time'])
+
             diff = asset_sales_history['last'] - asset_sales_history['bought']
-            
+
             last_time = datetime.datetime.utcfromtimestamp(asset_sales_history['last_time'])
-            bought_time = datetime.datetime.utcfromtimestamp(asset_sales_history['bought_time'])
             hodl = last_time - bought_time
             hours, minutes, _ = str(datetime.timedelta(seconds=hodl.seconds)).split(':')
 
@@ -49,7 +50,7 @@ class SalesTracker(commands.Cog):
             bought_string = f"""\n\n{bought_mint} for {asset_sales_history['bought']}₳."""
             hodl_string = f"""\n💰 Seller hodl for {days}{hours}{int(minutes)} minutes."""
             content_detail = f"""{bought_string}{hodl_string}\n{profit}\n"""
-  
+
             content=f"""🐱 {display_name} just sold for {sale['amount']}₳!{content_detail}"""
             tweet_id = ttf.tweet_sale(content, sale['asset'])
             await self.channel.send(f"""https://twitter.com/PuurrtyBot/status/{tweet_id}""")
