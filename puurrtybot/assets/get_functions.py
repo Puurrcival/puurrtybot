@@ -1,4 +1,8 @@
-import requests, puurrtybot
+import requests, puurrtybot, pandas as pd
+import matplotlib, matplotlib.pyplot as plt
+matplotlib.style.use('ggplot')
+plt.style.use('seaborn-dark-palette')
+import puurrtybot.functions as pf
 from io import BytesIO
 from PIL import Image
 
@@ -46,3 +50,26 @@ def get_asset_sale_history(asset):
         last = bought = last_time = bought_time = None
 
     return {'traded':traded, 'volume':volume, 'last':last,'highest':highest, 'lowest':lowest, 'bought':bought, 'last_time':last_time, 'bought_time':bought_time}
+
+
+def get_asset_sale_history_plot(asset):
+    data = puurrtybot.ASSETS_SALES_HISTORY[asset]
+    df = pd.DataFrame([pf.timestamp_to_utctime(timestamp) for timestamp in data['timestamps']][::-1], columns=['time'])
+    df['sell'] = data['amounts'][::-1]
+    df = df.set_index('time')
+    ax = df.plot(style='.-' , yticks=[i*100 for i in range(max(int(df['sell'].min()/100)-2,0),int(df['sell'].max()/100)+2)],alpha=0.75, rot=0, legend=False, markersize=20,  markerfacecolor='darkblue')
+    ax.set(xlabel="", ylabel="")
+    for idx, row in enumerate(df.iterrows()): 
+        d = row[0]
+        value = row[1][0]
+        ax.get_figure().patch.set_alpha(0)
+        ax.annotate(value, (idx, value), xytext=(-10, -20), textcoords='offset points',color='darkblue')
+
+    stream = BytesIO()
+    ax.tick_params(axis='x', colors='white')
+    ax.tick_params(axis='y', colors='white')
+    ax.get_figure().patch.set_alpha(0)
+    ax.get_figure().tight_layout()
+    ax.get_figure().savefig(stream, format='png')
+    stream.seek(0)
+    return stream

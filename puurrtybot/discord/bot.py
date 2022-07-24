@@ -26,6 +26,17 @@ async def ping(ctx):
     # Send it to the user
     await ctx.send(latency)
 
+
+@bot.command()
+async def test(ctx):
+    match = 'f96584c4fcd13cd1702c9be683400072dd1aac853431c99037a3ab1e4c617272794d617274696e'
+    image_stream = agf.get_asset_sale_history_plot(match)
+    image_stream = discord.File(fp = image_stream, filename="sales_plot.png")
+    embed = discord.Embed(title="test", url="", description="test", color=0x109319)
+    embed.set_image(url="attachment://sales_plot.png")
+    await ctx.send(embed=embed, file = image_stream)
+
+
 @bot.command()
 async def search(ctx, *, text):
     try:
@@ -48,8 +59,14 @@ async def search(ctx, *, text):
         embed.add_field(name=f"""Minted""", value=f"""For {puurrtybot.ASSETS[match[1]]['mint_price']}₳ at {pf.timestamp_to_utctime(puurrtybot.ASSETS[match[1]]['mint_time'])} UTC.""", inline=False)
 
         embed.set_footer(text="")
-        #await ctx.send(content = f"""{match}\n{sale_history}""", file=discord.File(fp=image, filename='cat.png'))
-        await ctx.send(embed=embed)
+        if sale_history['traded']>1:
+            image_stream = agf.get_asset_sale_history_plot(match[1])
+            image_stream = discord.File(image_stream, filename="sales_plot.png")
+            embed.add_field(name=f"""\u200b""", value=f"""**Sales History**""", inline=False) 
+            embed.set_image(url="attachment://sales_plot.png")
+            await ctx.send(embed=embed, file = image_stream)
+        else:
+            await ctx.send(embed=embed)
     except KeyError:
         await ctx.send(f"""Couldn't find a cat with that name.""")
 
