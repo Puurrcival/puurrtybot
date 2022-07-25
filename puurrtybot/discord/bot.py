@@ -56,7 +56,7 @@ async def search(ctx, *, text):
         embed.add_field(name="Lowest", value=f"""{sale_history['lowest']} ₳""", inline=True)
         embed.add_field(name="Highest", value=f"""{sale_history['highest']} ₳""", inline=True)
         embed.add_field(name="Volume", value=f"""{sale_history['volume']} ₳""", inline=True)
-        embed.add_field(name=f"""Minted""", value=f"""For {puurrtybot.ASSETS[match[1]]['mint_price']}₳ at {pf.timestamp_to_utctime(puurrtybot.ASSETS[match[1]]['mint_time'])} UTC.""", inline=False)
+        embed.add_field(name=f"""Minted""", value=f"""For {puurrtybot.ASSETS[match[1]]['mint_price']}₳ on {pf.get_formatted_date(puurrtybot.ASSETS[match[1]]['mint_time'])}.""", inline=False)
 
         embed.set_footer(text="")
         if sale_history['traded']>1:
@@ -74,7 +74,10 @@ async def search(ctx, *, text):
 @bot.command()
 async def twitter(ctx):
     reply = dgf.user_get_twitter(ctx.message.author.id)
-    await ctx.send(reply)
+    if reply:
+        await ctx.send(f"""https://twitter.com/{reply}""")
+    else:
+        await ctx.send(f"""No verified twitter account found, use /verify_twitter to verify.""")
 
 
 @bot.command()

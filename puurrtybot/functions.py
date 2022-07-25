@@ -5,8 +5,16 @@ from PIL import Image
 import puurrtybot, puurrtybot.assets.get_functions as agf
 
 
+def ordinal(n: int) -> str:
+    return f"{n:d}{'tsnrhtdd'[(n//10%10!=1)*(n%10<4)*n%10::4]}"
+
+
 def time_to_timestamp(timeformat):
     return int(datetime.datetime.strptime(timeformat,"%Y-%m-%d %H:%M:%S").replace(tzinfo=datetime.timezone.utc).timestamp())
+
+
+def timestamp_to_utcdatetime(timestamp):
+    return datetime.datetime.utcfromtimestamp(timestamp)
 
 
 def timestamp_to_utctime(timestamp):
@@ -15,6 +23,11 @@ def timestamp_to_utctime(timestamp):
 
 def get_utc_time():
     return int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+
+
+def get_formatted_date(date):
+    date = timestamp_to_utcdatetime(date)
+    return date.strftime(f'{ordinal(date.day)} %B %Y at %H:%m UTC')
 
 
 def get_random_between(start: int = 1, end: int = 100):
