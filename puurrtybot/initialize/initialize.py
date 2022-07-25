@@ -22,7 +22,7 @@ def initialize_assets_json():
 
 def initialize_market_sales_json():
     # jpgstore
-    jpgstore_sales = requests.get(f"""https://server.jpgstoreapis.com/collection/{puurrtybot.POLICY}/transactions?page=1&count=100000""").json()['transactions']
+    jpgstore_sales = requests.get(f"""https://server.jpgstoreapis.com/collection/{puurrtybot.POLICY}/transactions?page=1&count=100000""").json()['transactions'][::-1]
     for i, sale in enumerate(jpgstore_sales):
         if sale['action'] in ['BUY','ACCEPT_OFFER']:
             timestamp = pf.time_to_timestamp(sale['confirmed_at'].split('.')[0].split('+')[0].replace('T',' '))

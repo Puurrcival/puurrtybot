@@ -21,7 +21,7 @@ def get_untracked_sales_jpgstore():
                     untracked_sales[sale['tx_hash']]= sale
             page+=1
 
-        for tx_hash,sale in untracked_sales.items():
+        for tx_hash,sale in untracked_sales.items()[::-1]:
             if sale['action'] in ['BUY','ACCEPT_OFFER'] and sale['confirmed_at']:
                 timestamp = pf.time_to_timestamp(sale['confirmed_at'].split('.')[0].split('+')[0].replace('T',' '))
                 amount = int(sale['amount_lovelace'])/1_000_000
