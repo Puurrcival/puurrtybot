@@ -37,7 +37,7 @@ class SalesTracker(commands.Cog):
                 hours = f"""{int(hours)} hours and """
             else:
                 hours = ""   
-            diff = asset_sales_history['last'] - asset_sales_history['bought']
+            diff = asset_sales_history['bought'] - asset_sales_history['last']
             if asset_sales_history['bought'] == 0:
                 profit = f"""🎁 Seller took a profit of {diff}₳."""
             else:
