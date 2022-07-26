@@ -16,8 +16,20 @@ def initialize_assets_json():
     puurrtybot.ASSETS = {}
     for asset in tqdm.tqdm(bbq.get_asset_list_by_policy(policy = puurrtybot.POLICY)):
         puurrtybot.ASSETS[asset] = bbq.get_meta_by_asset(asset)
-    with open(f"""{puurrtybot.DATABASES_DIR}/assets.json""", 'w') as json_file:
-        json.dump(puurrtybot.ASSETS, json_file)
+    ddf.save_assets()
+
+
+def initialize_assets_addresses_json():
+    puurrtybot.ASSETS_ADDRESSES = {}
+    for asset in tqdm.tqdm(puurrtybot.ASSETS.keys()):
+        address = bbq.get_address_by_asset(asset)
+        try:
+            puurrtybot.ASSETS_ADDRESSES[address] += [asset]
+        except KeyError:
+            puurrtybot.ASSETS_ADDRESSES[address]  = [asset]
+    ddf.save_assets_addresses()
+    
+
 
 
 def initialize_market_sales_json():
@@ -38,8 +50,8 @@ def initialize_asset_sales_history_json():
     puurrtybot.ASSETS_SALES_HISTORY = {}
     for sale in puurrtybot.MARKET_SALES:
         try:
-            puurrtybot.ASSETS_SALES_HISTORY[sale['asset']]['amounts'].append(sale['amount'])
-            puurrtybot.ASSETS_SALES_HISTORY[sale['asset']]['timestamps'].append(sale['timestamp'])
+            puurrtybot.ASSETS_SALES_HISTORY[sale['asset']]['amounts'].insert(0, sale['amount'])
+            puurrtybot.ASSETS_SALES_HISTORY[sale['asset']]['timestamps'].insert(0, sale['timestamp'])
         except KeyError:
             puurrtybot.ASSETS_SALES_HISTORY[sale['asset']] = {}
             puurrtybot.ASSETS_SALES_HISTORY[sale['asset']]['amounts'] =  [sale['amount']]
@@ -118,7 +130,17 @@ def initialize_mint_prices(mint_address = 'addr1vxk4szdzv6qxqne5k3m0wr4m5cewh2pn
 
 def initialize_databases():
     #initialize_assets_json()
+    #initialize_assets_addresses_json()
     #initialize_mint_prices()
     initialize_market_sales_json()
     initialize_asset_sales_history_json()
     initialize_twitter_mentions()
+    pass
+
+
+#initialize_assets_addresses_json()
+#initialize_databases()
+
+
+#initialize_market_sales_json()
+#initialize_asset_sales_history_json()

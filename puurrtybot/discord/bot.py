@@ -1,3 +1,4 @@
+import puurrtybot
 import puurrtybot, os, discord, puurrtybot.initialize.initialize as pii
 from discord.ext import commands
 from discord_slash import SlashCommand, SlashContext
@@ -5,7 +6,8 @@ import puurrtybot.databases.database_functions as df
 import puurrtybot.databases.get_functions as dgf
 import puurrtybot.functions as pf
 import puurrtybot.assets.get_functions as agf
-import puurrtybot.initialize as pi
+import puurrtybot.users.user_updates as uup
+import time
 
 
 intents = discord.Intents.default()
@@ -16,11 +18,16 @@ slash = SlashCommand(bot, sync_commands=True)
 
 @bot.event
 async def on_ready():
-    pii.initialize_databases
+    #pii.initialize_databases()
     guild = bot.get_guild(998148160243384321)
     for member in guild.members:
-        df.create_new_user(member.id)
+        try:
+            puurrtybot.USERS[str(member.id)]
+        except KeyError:
+            uup.new_user(str(member.id))
+    uup.user_all_update()
     print("I am online")
+
 
 @bot.command()
 async def ping(ctx):
@@ -28,6 +35,12 @@ async def ping(ctx):
     latency = bot.latency  # Included in the Discord.py library
     # Send it to the user
     await ctx.send(latency)
+
+
+@bot.command()
+async def roles(ctx):
+    guild = bot.get_guild(998148160243384321)
+    await ctx.send("\n".join([f"""{role.id}: {guild.get_role(role.id)}""" for role in guild.roles if role.id != 998148160243384321]))
 
 
 @bot.command()

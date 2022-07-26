@@ -204,6 +204,11 @@ def save_assets():
             json.dump(puurrtybot.ASSETS, json_file)
 
 
+def save_assets_addresses():
+    with open(f"""{puurrtybot.DATABASES_DIR}/assets_addresses.json""", 'w') as json_file:
+        json.dump(puurrtybot.ASSETS_ADDRESSES ,json_file)
+
+
 def save_market_sale():
     with open(f"""{puurrtybot.DATABASES_DIR}/market_sales.json""", 'w') as json_file:
             json.dump(puurrtybot.MARKET_SALES, json_file)
@@ -217,3 +222,8 @@ def save_asset_sales_history():
 def save_twitter_mentions():
     with open(f"""{puurrtybot.DATABASES_DIR}/twitter_mentions.json""", 'w') as json_file:
         json.dump(puurrtybot.TWITTER_MENTIONS ,json_file)
+
+
+def save_users():
+    with open(f"""{puurrtybot.DATABASES_DIR}/users.json""", 'w') as json_file:
+        json.dump(puurrtybot.USERS ,json_file)

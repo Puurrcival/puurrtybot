@@ -32,8 +32,8 @@ def get_asset_image(asset: str, basewidth: int = 1200, stream: bool = True):
 
 def get_asset_sale_history(asset):
     try:
-        sales = puurrtybot.ASSETS_SALES_HISTORY[asset]['amounts']
-        timestamps = puurrtybot.ASSETS_SALES_HISTORY[asset]['timestamps']
+        sales = puurrtybot.ASSETS_SALES_HISTORY[asset]['amounts'][::-1]
+        timestamps = puurrtybot.ASSETS_SALES_HISTORY[asset]['timestamps'][::-1]
         volume = sum(sales)
         highest = max(sales)
         lowest = min(sales)
@@ -54,8 +54,8 @@ def get_asset_sale_history(asset):
 
 def get_asset_sale_history_plot(asset):
     data = puurrtybot.ASSETS_SALES_HISTORY[asset]
-    df = pd.DataFrame([pf.get_formatted_date(timestamp).split(' at')[0] for timestamp in data['timestamps']][::-1], columns=['time'])
-    df['sell'] = data['amounts'][::-1]
+    df = pd.DataFrame([pf.get_formatted_date(timestamp).split(' at')[0] for timestamp in data['timestamps']], columns=['time'])
+    df['sell'] = data['amounts']
     df = df.set_index('time')
     ax = df.plot(style='.-' , yticks=[i*100 for i in range(max(int(df['sell'].min()/100)-2,0),int(df['sell'].max()/100)+2)],alpha=0.75, rot=0, legend=False, markersize=20,  markerfacecolor='darkblue')
     ax.set(xlabel="", ylabel="")

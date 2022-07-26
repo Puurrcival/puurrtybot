@@ -15,6 +15,7 @@ class SalesTracker(commands.Cog):
             display_name = puurrtybot.ASSETS[sale['asset']]['onchain_metadata']['name']
 
             asset_sales_history = agf.get_asset_sale_history(sale['asset'])
+            print(asset_sales_history)
             if asset_sales_history['bought']:
                 bought_mint = "🛒 Seller bought"
                 bought_time = datetime.datetime.utcfromtimestamp(asset_sales_history['bought_time'])
@@ -52,6 +53,7 @@ class SalesTracker(commands.Cog):
             content_detail = f"""{bought_string}{hodl_string}\n{profit}\n"""
 
             content=f"""🐱 {display_name} just sold for {sale['amount']}₳!{content_detail}"""
+            print(content)
             tweet_id = ttf.tweet_sale(content, sale['asset'])
             await self.channel.send(f"""https://twitter.com/PuurrtyBot/status/{tweet_id}""")
             print("sent sale tweet")

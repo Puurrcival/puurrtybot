@@ -1,5 +1,11 @@
 import puurrtybot, json
 
+
+
+#new functions
+
+
+##################
 def user_get_assets_n(userid):
     user_dir= f"""{puurrtybot.PATH}/puurrtybot/databases/users/"""
     with open(f"""{user_dir}{userid}.json""", 'r') as openfile:
