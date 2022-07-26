@@ -1,10 +1,12 @@
-import puurrtybot, os, discord, datetime
+import puurrtybot, os, discord, puurrtybot.initialize.initialize as pii
 from discord.ext import commands
 from discord_slash import SlashCommand, SlashContext
 import puurrtybot.databases.database_functions as df
 import puurrtybot.databases.get_functions as dgf
 import puurrtybot.functions as pf
 import puurrtybot.assets.get_functions as agf
+import puurrtybot.initialize as pi
+
 
 intents = discord.Intents.default()
 intents.members = True
@@ -14,6 +16,7 @@ slash = SlashCommand(bot, sync_commands=True)
 
 @bot.event
 async def on_ready():
+    pii.initialize_databases
     guild = bot.get_guild(998148160243384321)
     for member in guild.members:
         df.create_new_user(member.id)
