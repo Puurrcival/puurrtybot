@@ -28,8 +28,6 @@ def initialize_assets_addresses_json():
         except KeyError:
             puurrtybot.ASSETS_ADDRESSES[address]  = [asset]
     ddf.save_assets_addresses()
-    
-
 
 
 def initialize_market_sales_json():
@@ -142,5 +140,5 @@ def initialize_databases():
 #initialize_databases()
 
 
-#initialize_market_sales_json()
-#initialize_asset_sales_history_json()
+initialize_market_sales_json()
+initialize_asset_sales_history_json()

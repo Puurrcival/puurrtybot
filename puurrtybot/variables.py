@@ -37,7 +37,7 @@ def load_json_db(DB_PATH: str):
 ASSETS = load_json_db('assets')
 ASSETS_ADDRESSES = load_json_db('assets_addresses')
 MARKET_SALES = load_json_db('market_sales')
-MARKET_SALES_TX_HASH = {sale['tx_hash']:True for sale in MARKET_SALES}
+MARKET_SALES_TX_HASH = load_json_db('market_sales_tx_hash')
 ASSETS_SALES_HISTORY = load_json_db('assets_sales_history')
 TWITTER_MENTIONS = load_json_db('twitter_mentions')
 

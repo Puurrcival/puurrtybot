@@ -41,6 +41,7 @@ def get_untracked_sales_jpgstore():
         untracked_sales = [sale for _, sale in untracked_sales.items() if sale]
         if untracked_sales:
             ddf.save_asset_sales_history()
-            ddf.save_market_sale()
+            ddf.save_market_sales()
+            ddf.save_market_sales_tx_hash()
             return sorted(untracked_sales, key=lambda sales: sales['timestamp'], reverse=False)
     return untracked_sales
