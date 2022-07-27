@@ -6,22 +6,36 @@ DATABASES_DIR = f"""{PATH}/puurrtybot/databases"""
 USERS_DIR = f"""{PATH}/puurrtybot/databases/users"""
 
 
-ROLES = {
+ROLES_ACCESS = {
         998185453083705425: "Admin", # Admins
         998186644836470806: "Bot", # Bots
         1001480465259175947: "verified", #verified member 
-        998190425275904000: "Stray Cat", # 0 cats
-        998571659382505492: "Puurrty Cat", # 1 cat
-        1001479213062299709 : "Puurrty Puurrson", # 2-4 cats
-        1001479154555953202 : "Puurrty Lovuurr", # 5-9 cats
-        1001479010167038043 : "Puurrty Hoarduurr", # 10-24 cats
-        1001478933528723506 : "Puurrty 25+", # 25-49 cats
-        1001478852020797521 : "Puurrty 50+", # 50-79 cats
-        1001478797595517018 : "Puurrty 80+", # 80-124 cats
-        1001478314013229208 : "Puurrty 125+", # 125-174 cats
-        1001478244752699482 : "Puurrty 200+", # 175-349 cats
-        1001478112602763335 : "Puurrty 350+", # 350-699 cats
-        1001477747866075216 : "Puurrty 700+" # 700+ cats
+        }
+
+
+ROLES_N = {
+        998190425275904000:   ("Stray Cat", 0), # 0 cats
+        998571659382505492:   ("Puurrty Cat", 1), # 1 cat
+        1001479213062299709:  ("Puurrty Puurrson", 2), # 2-4 cats
+        1001479154555953202:  ("Puurrty Lovuurr", 5), # 5-9 cats
+        1001479010167038043:  ("Puurrty Hoarduurr", 10), # 10-24 cats
+        1001478933528723506:  ("Puurrty 25+", 25), # 25-49 cats
+        1001478852020797521:  ("Puurrty 50+", 50), # 50-79 cats
+        1001478797595517018:  ("Puurrty 80+", 80), # 80-124 cats
+        1001478314013229208:  ("Puurrty 125+", 125), # 125-174 cats
+        1001478244752699482:  ("Puurrty 200+", 175), # 175-349 cats
+        1001478112602763335:  ("Puurrty 350+", 350), # 350-699 cats
+        1001477747866075216:  ("Puurrty 700+", 700) # 700+ cats
+        }
+
+
+ROLES_N_DICT = {v[1]:k for k, v in ROLES_N.items()}
+
+
+ROLES_TRAITS = {
+        "Kitsune": 1001838062667579456,
+        "Zombie":  1001838223263281152,
+        "Wizard":  1001838343216181258
         }
 
 

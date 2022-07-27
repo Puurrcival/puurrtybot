@@ -2,11 +2,12 @@ import puurrtybot
 import puurrtybot, os, discord, puurrtybot.initialize.initialize as pii
 from discord.ext import commands
 from discord_slash import SlashCommand, SlashContext
-import puurrtybot.databases.database_functions as df
+import puurrtybot.users.get_functions as ugf
 import puurrtybot.databases.get_functions as dgf
 import puurrtybot.functions as pf
 import puurrtybot.assets.get_functions as agf
 import puurrtybot.users.user_updates as uup
+import puurrtybot.roles.gangs as prg
 import time
 
 
@@ -45,12 +46,11 @@ async def roles(ctx):
 
 @bot.command()
 async def test(ctx):
-    match = 'f96584c4fcd13cd1702c9be683400072dd1aac853431c99037a3ab1e4c617272794d617274696e'
-    image_stream = agf.get_asset_sale_history_plot(match)
-    image_stream = discord.File(fp = image_stream, filename="sales_plot.png")
-    embed = discord.Embed(title="test", url="", description="test", color=0x109319)
-    embed.set_image(url="attachment://sales_plot.png")
-    await ctx.send(embed=embed, file = image_stream)
+    guild = bot.get_guild(998148160243384321)
+    print(guild)
+    member = guild.get_member(ctx.message.author.id)
+    content = await prg.join_kitsune(guild, member.id)
+    await ctx.send(content)
 
 
 @bot.command()
@@ -97,14 +97,20 @@ async def twitter(ctx):
 
 
 @bot.command()
-async def cats_n(ctx):
-    reply = dgf.user_get_assets_n(ctx.message.author.id)
+async def n_cats(ctx):
+    reply = ugf.user_get_n_cats(ctx.message.author.id)
+    await ctx.send(reply)
+
+
+@bot.command()
+async def traits(ctx):
+    reply = ugf.user_get_traits(ctx.message.author.id)
     await ctx.send(reply)
 
 
 @bot.command()
 async def wallets(ctx):
-    reply = dgf.user_get_stakes(ctx.message.author.id)
+    reply = ugf.user_get_stakes(ctx.message.author.id)
     if reply.strip()!='':
         await ctx.send(reply)
     else:

@@ -2,9 +2,10 @@ from discord.ext import commands, tasks
 from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
 import datetime
-import puurrtybot.databases.database_functions as dff
+import puurrtybot
 import puurrtybot.walletverifier.wallet_verify as wwv
 import puurrtybot.blockfrost.blockfrost_queries as bbq
+import puurrtybot.users.user_updates as uuu
 
 
 HIDDEN_STATUS = True
@@ -25,11 +26,9 @@ class WalletVerifier(commands.Cog):
         wallet = self.verification[userid]
         if check:
             await ctx.send(f"""<@{userid}>, transaction found, your address is now verified: {wallet}""", hidden=HIDDEN_STATUS)
-            dff.user_add_wallet(userid, wallet)
-            dff.user_update_wallets(userid)
-            dff.user_update_assets(userid)
-            dff.user_update_traits(userid)
-            self._tasks[userid].cancel()
+            puurrtybot.USERS[str(user_id)]['addresses'] += [wallet]
+            uuu.user_update(str(user_id))
+            self._tasks[userid].cancel() 
         else:
             print(f"""not verified {userid} {wallet}""")
             await ctx.send(f"""... still looking for transaction. \n Next check for transaction <t:{int(datetime.datetime.now().timestamp())+60*5}:R>.""", hidden=HIDDEN_STATUS)
@@ -67,7 +66,7 @@ class WalletVerifier(commands.Cog):
         address = wallet.strip()
         address = bbq.get_address_by_adahandle(address)
 
-        if dff.user_check_wallet_exists(userid, address):
+        if address in puurrtybot.USERS[str(user_id)]['addresses']:
             await ctx.send(f"""{ctx.author.mention}, you already verified this address: {address}""", hidden=HIDDEN_STATUS)
         elif not bbq.check_address_exists(address):
             await ctx.send(f"""{ctx.author.mention}, the entered address **{address}** **doesn't exist**. Please check the spelling and try again.""", hidden=HIDDEN_STATUS)

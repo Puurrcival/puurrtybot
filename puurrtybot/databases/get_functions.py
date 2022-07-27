@@ -23,7 +23,7 @@ def user_get_stakes(userid):
     try:    
         return '\n'.join(user['stakes'])
     except KeyError:
-        return 0
+        return 0 
 
 
 def user_get_twitter(userid):

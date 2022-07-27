@@ -140,5 +140,5 @@ def initialize_databases():
 #initialize_databases()
 
 
-initialize_market_sales_json()
-initialize_asset_sales_history_json()
+#initialize_market_sales_json()
+#initialize_asset_sales_history_json()

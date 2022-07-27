@@ -2,12 +2,10 @@ from discord.ext import commands, tasks
 from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
 import datetime
-import puurrtybot.databases.database_functions as dff
-#import puurrtybot.twitter.verify_twitter as tvt
 import puurrtybot.databases.get_functions as dgf
-
 import puurrtybot.twitter.twitter_queries as ttq
 import puurrtybot.twitterverifier.twitter_verify as tvt
+import puurrtybot
 
 HIDDEN_STATUS = True
 
@@ -29,7 +27,7 @@ class TwitterVerifier(commands.Cog):
         twitter_handle = self.verification[userid].twitter_account
         if check:
             await ctx.send(f"""<@{userid}>, reply found, your twitter account is now verified: {twitter_handle}""", hidden=HIDDEN_STATUS)
-            dff.user_set_twitter(userid,twitter_handle)
+            puurrtybot.USERS[str(userid)] = twitter_handle
             self._tasks[userid].cancel()
         else:
             print(f"""not verified {userid} {twitter_handle}""")
