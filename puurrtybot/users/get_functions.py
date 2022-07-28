@@ -11,3 +11,11 @@ def user_get_traits(user_id):
 
 def user_get_stakes(user_id):
     return ', '.join(puurrtybot.USERS[str(user_id)]['stakes'])
+
+
+def user_get_trait_n(user_id, trait):
+    user_id = str(user_id)
+    try:
+        return puurrtybot.USERS[user_id]['join_trait'][trait]
+    except KeyError:
+        return 0

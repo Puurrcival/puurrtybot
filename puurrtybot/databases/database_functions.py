@@ -156,6 +156,7 @@ def user_set_twitter(userid, twitter_handle):
 
 
 def user_check_wallet_exists(userid, address):
+    puurrtybot.USERS[str(user_id)]['addresses']
     user_dir= f"""{puurrtybot.PATH}/puurrtybot/databases/users/"""
     with open(f"""{user_dir}{userid}.json""", 'r') as openfile:
         user = json.load(openfile)

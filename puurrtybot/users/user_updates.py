@@ -2,6 +2,28 @@ import puurrtybot, json
 import puurrtybot.blockfrost.blockfrost_queries as bbq
 import puurrtybot.databases.database_functions as ddf
 
+
+JOIN_TRAITS = {"Kitsune": True, 
+                "Zombie": True, 
+                "Wizard Hat": True, 
+                "Wand": True, 
+                "Halo": True, 
+                "Angel Wings": True, 
+                "Crystal": True, 
+                "Cyborg": True, 
+                "Devil": True, 
+                "Fire Eyes": True, 
+                "Devil Tail": True, 
+                "Gold": True, 
+                "Jason": True, 
+                "Crown": True, 
+                "Pharaoh Headress": True,
+                "Skeleton": True,
+                "Yes": True,
+                "Pirate Hat": True,
+                "Pirate Jacket": True,
+                "Laser Eyes":True}
+
 def user_update_addresses(user_id, save=False):
     address_list = []
     for stake_address in puurrtybot.USERS[user_id]['stakes']:
@@ -32,8 +54,9 @@ def user_update_assets(user_id):
 
 def user_update_traits(user_id):
     traits = {}
+    join_trait = {}
     for asset in puurrtybot.USERS[user_id]['assets']:
-
+        join_trait_done = {}
         for k,v in puurrtybot.ASSETS[asset]['onchain_metadata'].items():
             k = k.strip()
             v = v.strip()
@@ -42,6 +65,19 @@ def user_update_traits(user_id):
                     traits[k]
                 except KeyError:
                     traits[k] = {}
+
+                # join_trait
+                if v in JOIN_TRAITS.keys():
+                    v = puurrtybot.JOIN_TRAITS[v]
+                    try:
+                        join_trait_done[v]
+                    except KeyError:
+                        join_trait_done[v] = True
+                        try:
+                            join_trait[v] += 1
+                        except KeyError:
+                            join_trait[v] = 1
+
 
                 try:
                     traits[k][v]+=1
@@ -52,6 +88,7 @@ def user_update_traits(user_id):
     except KeyError:
         pass
     puurrtybot.USERS[user_id]['traits'] = traits
+    puurrtybot.USERS[user_id]['join_trait'] = join_trait
 
 
 def save_user(user_id):

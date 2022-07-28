@@ -6,6 +6,10 @@ DATABASES_DIR = f"""{PATH}/puurrtybot/databases"""
 USERS_DIR = f"""{PATH}/puurrtybot/databases/users"""
 
 
+GUILD = 998148160243384321
+ROLES = []
+
+
 ROLES_ACCESS = {
         998185453083705425: "Admin", # Admins
         998186644836470806: "Bot", # Bots
@@ -35,8 +39,72 @@ ROLES_N_DICT = {v[1]:k for k, v in ROLES_N.items()}
 ROLES_TRAITS = {
         "Kitsune": 1001838062667579456,
         "Zombie":  1001838223263281152,
-        "Wizard":  1001838343216181258
+        "Wizard":  1001838343216181258,
+        "Angel": 1002193337408835605,
+        "Crystal": 1002193227975250050,
+        "Cyborg": 1002193140452692068,
+        "Devil": 1002193053576085534,
+        "Gold": 1002192993589133402,
+        "Jason": 1002192909107482765,
+        "Royal": 1002192837066117150,
+        "Unique": 1002192667410710639,
+        "Pirate": 1002195354051166270,
+        "Skeleton": 1002192551081693226,
+        "Laser": 1001982288042655825,
         }
+
+JOIN_TRAITS = {
+    #kitsune
+    "Kitsune": "kitsune",
+
+    #zombie
+    "Zombie": "zombie",
+
+    #wizard
+    "Wizard Hat": "wizard", 
+    "Wand": "wizard",
+
+    #angel
+    "Halo": "angel",
+    "Angel Wings": "angel",
+
+    #crystal
+    "Crystal": "crystal",
+
+    #cyborg
+    "Cyborg": "cyborg",
+
+    #devil
+    "Devil": "devil",
+    "Fire Eyes": "devil",
+    "Devil Tail": "devil",
+
+    #gold
+    "Gold": "gold",
+
+    #jason
+    "Jason": "jason",
+
+    #royal
+    "Crown": "royal", 
+    "Pharaoh Headress": "royal",
+    "Royal Cloak": "royal",
+
+    #unique
+    "Yes": "unique",
+
+    #pirate                     
+    "Pirate Hat": "pirate",
+    "Pirate Jacket": "pirate",
+
+    #skeleton
+    "Skeleton": "skeleton",
+
+    #laser
+    "Laser Eyes": "laser",
+}
+
+
 
 
 def load_json_db(DB_PATH: str):

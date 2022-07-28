@@ -1,7 +1,9 @@
+from venv import create
 import puurrtybot
 import puurrtybot, os, discord, puurrtybot.initialize.initialize as pii
 from discord.ext import commands
 from discord_slash import SlashCommand, SlashContext
+from discord_slash.utils.manage_commands import create_choice, create_option
 import puurrtybot.users.get_functions as ugf
 import puurrtybot.databases.get_functions as dgf
 import puurrtybot.functions as pf
@@ -20,8 +22,8 @@ slash = SlashCommand(bot, sync_commands=True)
 @bot.event
 async def on_ready():
     #pii.initialize_databases()
-    guild = bot.get_guild(998148160243384321)
-    for member in guild.members:
+    puurrtybot.GUILD = bot.get_guild(puurrtybot.GUILD)
+    for member in puurrtybot.GUILD.members:
         try:
             puurrtybot.USERS[str(member.id)]
         except KeyError:
@@ -40,7 +42,7 @@ async def ping(ctx):
 
 @bot.command()
 async def roles(ctx):
-    guild = bot.get_guild(998148160243384321)
+    guild = puurrtybot.GUILD
     await ctx.send("\n".join([f"""{role.id}: {guild.get_role(role.id)}""" for role in guild.roles if role.id != 998148160243384321]))
 
 
@@ -115,6 +117,80 @@ async def wallets(ctx):
         await ctx.send(reply)
     else:
         await ctx.send("No verified wallet.")
+
+
+@slash.slash(
+    name = "jointrait",
+    description = "choose your trait",
+    options = [
+        create_option(
+            name = "trait",
+            description = "choose yourt trait",
+            required = True,
+            option_type = 3,
+            choices = [
+                create_choice(
+                    name = "Kitsune",
+                    value = "kitsune"),
+                create_choice(
+                    name = "Zombie",
+                    value = "zombie"),
+                create_choice(
+                    name = "Wizard",
+                    value = "wizard"),
+                create_choice(
+                    name = "Angel",
+                    value = "angel"),
+                create_choice(
+                    name = "Crystal",
+                    value = "crystal"),
+                create_choice(
+                    name = "Cyborg",
+                    value = "cyborg"),
+                create_choice(
+                    name = "Devil",
+                    value = "devil"),
+                create_choice(
+                    name = "Gold",
+                    value = "gold"),
+                create_choice(
+                    name = "Jason",
+                    value = "jason"),
+                create_choice(
+                    name = "Royal",
+                    value = "royal"),
+                create_choice(
+                    name = "Unique",
+                    value = "unique"),
+                create_choice(
+                    name = "Pirate",
+                    value = "pirate"),
+                create_choice(
+                    name = "Skeleton",
+                    value = "skeleton"),
+                create_choice(
+                    name = "Laser",
+                    value = "laser"),     
+            ]
+        )
+    ]
+)
+
+
+async def _join(ctx:SlashContext, trait:str):
+    user_id = str(ctx.author.id)
+    n = ugf.user_get_trait_n(user_id , trait)
+    new_role_id = int(puurrtybot.ROLES_TRAITS[trait.title()])
+    guild = bot.get_guild(998148160243384321)
+    new_role = guild.get_role(new_role_id)
+    s = 's'
+    if n==1:
+        s=''
+    if n > 0:
+        content = await prg.join_trait(new_role, ctx, user_id, trait, n)
+        await ctx.channel.send(f"""{ctx.author.mention}, you have {n} qualifying cat{s}. {content}""")
+    else:
+        await ctx.channel.send(f"""{ctx.author.mention} can't join {trait}, because you have {n} cat{s} with the trait needed.""")
 
 
 for filename in os.listdir(puurrtybot.PATH/'puurrtybot/discord/cogs'):
