@@ -91,7 +91,7 @@ async def search(ctx, *, text):
 
 @bot.command()
 async def twitter(ctx):
-    reply = dgf.user_get_twitter(ctx.message.author.id)
+    reply = puurrtybot.USERS[str(ctx.author.id)]['twitter']
     if reply:
         await ctx.send(f"""https://twitter.com/{reply}""")
     else:

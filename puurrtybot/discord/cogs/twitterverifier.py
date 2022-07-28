@@ -5,6 +5,7 @@ import datetime
 import puurrtybot.databases.get_functions as dgf
 import puurrtybot.twitter.twitter_queries as ttq
 import puurrtybot.twitterverifier.twitter_verify as tvt
+import puurrtybot.users.user_updates as uuu
 import puurrtybot
 
 HIDDEN_STATUS = True
@@ -27,7 +28,8 @@ class TwitterVerifier(commands.Cog):
         twitter_handle = self.verification[userid].twitter_account
         if check:
             await ctx.send(f"""<@{userid}>, reply found, your twitter account is now verified: {twitter_handle}""", hidden=HIDDEN_STATUS)
-            puurrtybot.USERS[str(userid)] = twitter_handle
+            puurrtybot.USERS[str(userid)]['twitter'] = twitter_handle
+            uuu.save_user(str(userid))
             self._tasks[userid].cancel()
         else:
             print(f"""not verified {userid} {twitter_handle}""")

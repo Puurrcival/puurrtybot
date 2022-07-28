@@ -66,7 +66,7 @@ class WalletVerifier(commands.Cog):
         address = wallet.strip()
         address = bbq.get_address_by_adahandle(address)
 
-        if address in puurrtybot.USERS[str(user_id)]['addresses']:
+        if address in puurrtybot.USERS[str(userid)]['addresses']:
             await ctx.send(f"""{ctx.author.mention}, you already verified this address: {address}""", hidden=HIDDEN_STATUS)
         elif not bbq.check_address_exists(address):
             await ctx.send(f"""{ctx.author.mention}, the entered address **{address}** **doesn't exist**. Please check the spelling and try again.""", hidden=HIDDEN_STATUS)
