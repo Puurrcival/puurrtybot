@@ -1,4 +1,4 @@
-import configparser, tweepy, puurrtybot, puurrtybot.assets.get_functions as agf, puurrtybot.functions as pf
+import configparser, tweepy, puurrtybot, puurrtybot.assets.get_functions as agf
 
 # read config
 config = configparser.ConfigParser()

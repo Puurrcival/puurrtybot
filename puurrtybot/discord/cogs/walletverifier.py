@@ -23,8 +23,9 @@ class WalletVerifier(commands.Cog):
     async def static_loop(self, userid, count):
         ctx = self.ctx_id[userid]
         check = self.verification[userid].verify_transaction()
-        wallet = self.verification[userid]
+        wallet = self.verification[userid].address
         if check:
+            print(f"""verified {userid} {wallet}""")
             await ctx.send(f"""<@{userid}>, transaction found, your address is now verified: {wallet}""", hidden=HIDDEN_STATUS)
             puurrtybot.USERS[str(userid)]['addresses'] += [wallet]
             uuu.user_update(str(userid))

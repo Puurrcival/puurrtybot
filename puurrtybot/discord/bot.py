@@ -91,10 +91,10 @@ async def search(ctx, *, text):
 
 @bot.command()
 async def twitter(ctx):
-    reply = puurrtybot.USERS[str(ctx.author.id)]['twitter']['handle']
-    if reply:
+    try:
+        reply = puurrtybot.USERS[str(ctx.author.id)]['twitter']['handle']
         await ctx.send(f"""https://twitter.com/{reply}""")
-    else:
+    except KeyError:
         await ctx.send(f"""No verified twitter account found, use /verify_twitter to verify.""")
 
 
