@@ -11,6 +11,7 @@ logs
 
 # Ignore Databases
 *.json
+**/snapshots
 
 # Ignore Notebooks
 **/notebooks

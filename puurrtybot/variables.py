@@ -51,6 +51,7 @@ ROLES_TRAITS = {
         "Pirate": 1002195354051166270,
         "Skeleton": 1002192551081693226,
         "Laser": 1001982288042655825,
+        "Educated": 1002563315509248110,
         }
 
 JOIN_TRAITS = {
@@ -62,6 +63,7 @@ JOIN_TRAITS = {
 
     #wizard
     "Wizard Hat": "wizard", 
+    "Wizard Robe": "wizard",
     "Wand": "wizard",
 
     #angel
@@ -102,6 +104,11 @@ JOIN_TRAITS = {
 
     #laser
     "Laser Eyes": "laser",
+
+    #laser
+    "Professor": "educated",
+    "Dr.": "educated",
+    "Ph.D.": "educated",
 }
 
 

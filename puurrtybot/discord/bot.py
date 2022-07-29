@@ -9,7 +9,7 @@ import puurrtybot.databases.get_functions as dgf
 import puurrtybot.functions as pf
 import puurrtybot.assets.get_functions as agf
 import puurrtybot.users.user_updates as uup
-import puurrtybot.roles.gangs as prg
+import puurrtybot.roles.packs as prg
 import time
 
 
@@ -91,7 +91,7 @@ async def search(ctx, *, text):
 
 @bot.command()
 async def twitter(ctx):
-    reply = puurrtybot.USERS[str(ctx.author.id)]['twitter']
+    reply = puurrtybot.USERS[str(ctx.author.id)]['twitter']['handle']
     if reply:
         await ctx.send(f"""https://twitter.com/{reply}""")
     else:
@@ -117,80 +117,6 @@ async def wallets(ctx):
         await ctx.send(reply)
     else:
         await ctx.send("No verified wallet.")
-
-
-@slash.slash(
-    name = "jointrait",
-    description = "choose your trait",
-    options = [
-        create_option(
-            name = "trait",
-            description = "choose yourt trait",
-            required = True,
-            option_type = 3,
-            choices = [
-                create_choice(
-                    name = "Kitsune",
-                    value = "kitsune"),
-                create_choice(
-                    name = "Zombie",
-                    value = "zombie"),
-                create_choice(
-                    name = "Wizard",
-                    value = "wizard"),
-                create_choice(
-                    name = "Angel",
-                    value = "angel"),
-                create_choice(
-                    name = "Crystal",
-                    value = "crystal"),
-                create_choice(
-                    name = "Cyborg",
-                    value = "cyborg"),
-                create_choice(
-                    name = "Devil",
-                    value = "devil"),
-                create_choice(
-                    name = "Gold",
-                    value = "gold"),
-                create_choice(
-                    name = "Jason",
-                    value = "jason"),
-                create_choice(
-                    name = "Royal",
-                    value = "royal"),
-                create_choice(
-                    name = "Unique",
-                    value = "unique"),
-                create_choice(
-                    name = "Pirate",
-                    value = "pirate"),
-                create_choice(
-                    name = "Skeleton",
-                    value = "skeleton"),
-                create_choice(
-                    name = "Laser",
-                    value = "laser"),     
-            ]
-        )
-    ]
-)
-
-
-async def _join(ctx:SlashContext, trait:str):
-    user_id = str(ctx.author.id)
-    n = ugf.user_get_trait_n(user_id , trait)
-    new_role_id = int(puurrtybot.ROLES_TRAITS[trait.title()])
-    guild = bot.get_guild(998148160243384321)
-    new_role = guild.get_role(new_role_id)
-    s = 's'
-    if n==1:
-        s=''
-    if n > 0:
-        content = await prg.join_trait(new_role, ctx, user_id, trait, n)
-        await ctx.channel.send(f"""{ctx.author.mention}, you have {n} qualifying cat{s}. {content}""")
-    else:
-        await ctx.channel.send(f"""{ctx.author.mention} can't join {trait}, because you have {n} cat{s} with the trait needed.""")
 
 
 for filename in os.listdir(puurrtybot.PATH/'puurrtybot/discord/cogs'):

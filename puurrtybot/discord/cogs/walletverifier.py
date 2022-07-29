@@ -10,15 +10,15 @@ import puurrtybot.users.user_updates as uuu
 
 HIDDEN_STATUS = True
 
-class WalletVerifier(commands.Cog):
 
+class WalletVerifier(commands.Cog):
     def __init__(self, client):
         self.client = client
         self._tasks = {} 
         self.counter = {}
         self.ctx_id = {}
         self.verification = {}
-        self.channel = self.client.get_channel(998321232208478219)
+
 
     async def static_loop(self, userid, count):
         ctx = self.ctx_id[userid]
@@ -26,8 +26,8 @@ class WalletVerifier(commands.Cog):
         wallet = self.verification[userid]
         if check:
             await ctx.send(f"""<@{userid}>, transaction found, your address is now verified: {wallet}""", hidden=HIDDEN_STATUS)
-            puurrtybot.USERS[str(user_id)]['addresses'] += [wallet]
-            uuu.user_update(str(user_id))
+            puurrtybot.USERS[str(userid)]['addresses'] += [wallet]
+            uuu.user_update(str(userid))
             self._tasks[userid].cancel() 
         else:
             print(f"""not verified {userid} {wallet}""")
@@ -38,6 +38,7 @@ class WalletVerifier(commands.Cog):
         if self.counter[userid] > count:
             await ctx.send(f"""<@{userid}>, verifying time exceeded.""", hidden=HIDDEN_STATUS)
             print('time exceeded')
+
 
     def task_launcher(self, userid, seconds, count):
         new_task = tasks.loop(seconds = seconds, count = count)(self.static_loop)
@@ -58,6 +59,7 @@ class WalletVerifier(commands.Cog):
                    ]
                       )
     async def verify_task(self, ctx:SlashContext, wallet:str):
+        print(wallet)
         userid = ctx.author_id
         try:    
             self._tasks[userid].cancel()

@@ -2,6 +2,7 @@ from discord.ext import commands, tasks
 import time, puurrtybot.twitter.twitter_functions as ttf, puurrtybot.markets.market_queries as mmq, puurrtybot, datetime
 import puurrtybot.assets.get_functions as agf
 
+
 class SalesTracker(commands.Cog):
     def __init__(self, client):
         self.client = client

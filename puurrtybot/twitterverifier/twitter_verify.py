@@ -5,11 +5,11 @@ verify_tweet_id = '1549207713594343425'
 verify_conversation_id = ttq.get_conversation_id_by_tweet_id(verify_tweet_id)
 
 class TwitterVerify:
-    def __init__(self, userid: int, twitter_account: str, twitter_id: str, from_log: bool = False):
-        self.twitter_account = twitter_account
+    def __init__(self, user_id: int, twitter_handle: str, twitter_id: str, from_log: bool = False):
+        self.user_id = user_id
+        self.twitter_handle = twitter_handle
         self.twitter_id = twitter_id
-        self.userid = userid
-        self.log_path = f"""{puurrtybot.DATABASES_DIR}/verify_twitter/{self.userid}.json"""
+        self.log_path = f"""{puurrtybot.DATABASES_DIR}/verify_twitter/{self.user_id}.json"""
         if from_log:
             self.read_log()
         else:
@@ -20,9 +20,9 @@ class TwitterVerify:
         with open(f"""{self.log_path}.json""", 'r') as json_file:
             log_data = json.load(json_file)
             if log_data['time'] + 1*1*60*60 - f.get_utc_time() > 0:
-                self.twitter_account = log_data['twitter_account']
+                self.twitter_handle = log_data['twitter_handle']
                 self.amount = log_data['amount']
-                self.userid = log_data['userid']
+                self.user_id = log_data['user_id']
                 self.time = log_data['time']
             else:
                 self.delete_log()
@@ -30,9 +30,9 @@ class TwitterVerify:
     
     def create_log(self):
         with open(self.log_path, 'w') as json_file:
-                json.dump({'twitter_account': self.twitter_account,
+                json.dump({'twitter_handle': self.twitter_handle,
                            'amount' : self.amount,
-                           'userid' : self.userid,
+                           'user_id' : self.user_id,
                            'time' : self.time}, json_file)
 
 
@@ -48,7 +48,7 @@ class TwitterVerify:
         
     def verify_twitter(self):
         time_limit = 70*60
-        response = ttq.get_reply_from_to(f"""{self.twitter_account}""", """PuurrtyBot""")
+        response = ttq.get_reply_from_to(f"""{self.twitter_handle}""", """PuurrtyBot""")
         try:
             if [data for data in response['data'] if data['author_id'] == self.twitter_id and self.amount in data['text'] and ttq.twitter_time_to_timestamp(data['created_at']) - f.get_utc_time() + time_limit > 0]:
                 return True
@@ -65,4 +65,4 @@ class TwitterVerify:
 
 
 def get_interrupted_verification():
-    return os.listdir(f"""{puurrtybot.DATABASES_DIR}/verify_twitter/{self.userid}.json""")
+    return os.listdir(f"""{puurrtybot.DATABASES_DIR}/verify_twitter/{self.user_id}.json""")

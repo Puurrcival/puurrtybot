@@ -1,6 +1,7 @@
 from discord.ext import commands, tasks
 import puurrtybot.twitter.twitter_queries as ttq, time
 
+
 class TwitterTracker(commands.Cog):
     def __init__(self, client):
         self.client = client

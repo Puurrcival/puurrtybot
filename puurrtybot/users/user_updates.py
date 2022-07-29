@@ -1,11 +1,13 @@
 import puurrtybot, json
 import puurrtybot.blockfrost.blockfrost_queries as bbq
 import puurrtybot.databases.database_functions as ddf
+import puurrtybot.assets.meta as pam
 
 
 JOIN_TRAITS = {"Kitsune": True, 
                 "Zombie": True, 
                 "Wizard Hat": True, 
+                "Wizard Robe:": True,
                 "Wand": True, 
                 "Halo": True, 
                 "Angel Wings": True, 
@@ -22,19 +24,22 @@ JOIN_TRAITS = {"Kitsune": True,
                 "Yes": True,
                 "Pirate Hat": True,
                 "Pirate Jacket": True,
-                "Laser Eyes":True}
+                "Laser Eyes": True,
+                "Professor": True,
+                "Dr.": True,
+                "Ph.D.": True}
 
 def user_update_addresses(user_id, save=False):
     address_list = []
     for stake_address in puurrtybot.USERS[user_id]['stakes']:
         address_list += bbq.get_address_list_by_stake_address(stake_address)
 
-
     for address in puurrtybot.USERS[user_id]['addresses']:
         if address not in address_list:
-            stake_address += bbq.get_stake_address_by_address(address)
-            puurrtybot.USERS[user_id]['stakes'] += stake_address
-            address_list += bbq.get_address_list_by_stake_address(stake_address)
+            stake_address = bbq.get_stake_address_by_address(address)
+            if stake_address not in puurrtybot.USERS[user_id]['stakes']:
+                puurrtybot.USERS[user_id]['stakes'].append(bbq.get_stake_address_by_address(address))
+                address_list += bbq.get_address_list_by_stake_address(stake_address)
 
     puurrtybot.USERS[user_id]['addresses'] = list(set(puurrtybot.USERS[user_id]['addresses'] + address_list))
     puurrtybot.USERS[user_id]['stakes'] = list(set(puurrtybot.USERS[user_id]['stakes']))
@@ -56,6 +61,22 @@ def user_update_traits(user_id):
     traits = {}
     join_trait = {}
     for asset in puurrtybot.USERS[user_id]['assets']:
+        try:
+            puurrtybot.ASSETS[asset]['onchain_metadata']['unique'] 
+        except KeyError:
+            name = puurrtybot.ASSETS[asset]['onchain_metadata']['name']
+            prefix = pam.name_has_prefix(name)
+            last_name = pam.name_has_lastname(name)
+            suffix = pam.name_has_suffix(name)
+            first_name = name
+            for name_trait in [prefix, suffix, last_name]:
+                if name_trait!='':
+                    first_name = first_name.replace(name_trait, ' ').strip()
+            puurrtybot.ASSETS[asset]['onchain_metadata']['prefix'] = prefix.strip()
+            puurrtybot.ASSETS[asset]['onchain_metadata']['first_name'] = first_name.strip()
+            puurrtybot.ASSETS[asset]['onchain_metadata']['last_name'] = last_name.strip()
+            puurrtybot.ASSETS[asset]['onchain_metadata']['suffix'] = suffix.strip()
+
         join_trait_done = {}
         for k,v in puurrtybot.ASSETS[asset]['onchain_metadata'].items():
             k = k.strip()
@@ -77,6 +98,7 @@ def user_update_traits(user_id):
                             join_trait[v] += 1
                         except KeyError:
                             join_trait[v] = 1
+
 
 
                 try:
