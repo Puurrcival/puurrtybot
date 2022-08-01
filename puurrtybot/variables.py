@@ -122,11 +122,12 @@ def load_json_db(DB_PATH: str):
         DB = {}
     return DB
 
-
 ASSETS = load_json_db('assets')
 ASSETS_ADDRESSES = load_json_db('assets_addresses')
 MARKET_SALES = load_json_db('market_sales')
 MARKET_SALES_TX_HASH = load_json_db('market_sales_tx_hash')
+MARKET_LISTINGS = load_json_db('market_listings')
+MARKET_LISTINGS_IDS = load_json_db('market_listings_ids')
 ASSETS_SALES_HISTORY = load_json_db('assets_sales_history')
 TWITTER_MENTIONS = load_json_db('twitter_mentions')
 

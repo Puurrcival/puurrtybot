@@ -220,6 +220,15 @@ def save_market_sales_tx_hash():
             json.dump(puurrtybot.MARKET_SALES_TX_HASH, json_file)
 
 
+def save_market_listings():
+    with open(f"""{puurrtybot.DATABASES_DIR}/market_listings.json""", 'w') as json_file:
+            json.dump(puurrtybot.MARKET_LISTINGS, json_file)
+
+
+def save_market_listings_ids():
+    with open(f"""{puurrtybot.DATABASES_DIR}/market_listings_ids.json""", 'w') as json_file:
+            json.dump(puurrtybot.MARKET_LISTINGS_IDS, json_file)
+
 
 def save_asset_sales_history():
     with open(f"""{puurrtybot.DATABASES_DIR}/assets_sales_history.json""", 'w') as json_file:

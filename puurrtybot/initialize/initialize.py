@@ -44,6 +44,20 @@ def initialize_market_sales_json():
             json.dump(puurrtybot.MARKET_SALES, json_file)
 
 
+def initialize_market_listings_json():
+    # jpgstore
+    jpgstore_listings = requests.get(f"""https://server.jpgstoreapis.com/search/tokens?policyIds=[%22{puurrtybot.POLICY}%22]&saleType=buy-now&sortBy=recently-listed&traits=%7B%7D&nameQuery=&verified=default&pagination=%7B%7D&size=10000""").json()['tokens'][::-1]
+    for i, listing in enumerate(jpgstore_listings):
+        timestamp = pf.time_to_timestamp(listing['created_at'].split('.')[0].split('+')[0].replace('T',' '))
+        jpgstore_listings[i] = {'listing_id': f"""{listing['listed_at']}_{listing['asset_name']}""", 'timestamp':timestamp, 'asset':listing['asset_name'], 'amount':int(listing['listing_lovelace'])/1_000_000, 'market':'jpgstore'}
+    puurrtybot.MARKET_LISTINGS = sorted(jpgstore_listings, key=lambda d: d['timestamp'], reverse=True)
+    with open(f"""{puurrtybot.DATABASES_DIR}/market_listings.json""", 'w') as json_file:
+            json.dump(puurrtybot.MARKET_LISTINGS, json_file)
+    puurrtybot.MARKET_LISTINGS_IDS = {listing['listing_id']:True for listing in puurrtybot.MARKET_LISTINGS}
+    with open(f"""{puurrtybot.DATABASES_DIR}/market_listings_ids.json""", 'w') as json_file:
+            json.dump(puurrtybot.MARKET_LISTINGS_IDS, json_file)
+
+
 def initialize_asset_sales_history_json():
     puurrtybot.ASSETS_SALES_HISTORY = {}
     for sale in puurrtybot.MARKET_SALES:
@@ -142,3 +156,4 @@ def initialize_databases():
 
 #initialize_market_sales_json()
 #initialize_asset_sales_history_json()
+#initialize_market_listings_json()
