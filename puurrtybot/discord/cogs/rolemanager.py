@@ -11,8 +11,8 @@ class RoleManager(commands.Cog):
         print('RoleManager running')
         #update role function
         guild = self.client.get_guild(998148160243384321)
-        for user_id in puurrtybot.USERS.keys():
-            await rur.update_roles_n(guild, user_id)
+        await rur.update_roles_n(guild)
+        await rur.update_roles_traits(guild)
 
 
     @commands.Cog.listener()

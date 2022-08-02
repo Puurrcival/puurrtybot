@@ -12,7 +12,7 @@ def get_kitsune(user_id):
 async def join_trait(new_role, member, trait, trait_n):
     trait = trait.title()
     try:
-        member_roles = [role for role in member.roles if role.id in puurrtybot.ROLES_TRAITS.values()][0]
+        member_roles = [role for role in member.roles if role.id in puurrtybot.ROLES_JOIN_TRAITS.values()][0]
         print(member_roles)
     except IndexError:
         member_roles = None

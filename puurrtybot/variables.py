@@ -37,6 +37,23 @@ ROLES_N_DICT = {v[1]:k for k, v in ROLES_N.items()}
 
 
 ROLES_TRAITS = {
+        1003995315935912056: ('hat', 'royal'), # Coin
+        1003994809385635840: ('hat', 'royal'), # Crown
+        1002948740396634142: ('fur', 'cyborg'), # Cyborg
+        1003995192514330715: ('hat', 'devil'), # Devil hat
+        1003995806434603059: ('eyes', 'Fire Eyes'), # Fire Eyes
+        1003995087560249464: ('mouth', 'Gas Mask'), # Gas Mask
+        1002939280714371092: ('mask', 'jason'), # Jason
+        1002939378068365362: ('mask', 'kitsune'), # Kitsune
+        1002948874064908401: ('eyes', 'laser'), # Laser Eyes
+        1002938967806705775: ('fur', 'skeleton'), # Skeleton
+        1003995578188963901: ('unique', 'unique'), # Unique
+        1003995148205707314: ('wings', 'angel'), # Wings
+        1002939170626482257: ('fur', 'zombie'), # Zombie
+}
+
+
+ROLES_JOIN_TRAITS = {
         "Kitsune": 1001838062667579456,
         "Zombie":  1001838223263281152,
         "Wizard":  1001838343216181258,

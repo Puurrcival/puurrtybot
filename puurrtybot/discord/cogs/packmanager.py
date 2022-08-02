@@ -23,7 +23,7 @@ class PackManager(commands.Cog):
                             description = "pack_name",
                             required = True,
                             option_type = 3,
-                            choices = [create_choice(name = pack, value = pack.lower()) for pack in sorted(puurrtybot.ROLES_TRAITS.keys())])
+                            choices = [create_choice(name = pack, value = pack.lower()) for pack in sorted(puurrtybot.ROLES_JOIN_TRAITS.keys())])
                    ]
                       )
     async def join_pack(self, ctx:SlashContext, pack_name: str):
@@ -32,7 +32,7 @@ class PackManager(commands.Cog):
         user_id = ctx.author_id
         self.ctx_id[user_id] = ctx
         if n>0:
-            new_role = puurrtybot.GUILD.get_role(int(puurrtybot.ROLES_TRAITS[pack_name.title()]))
+            new_role = puurrtybot.GUILD.get_role(int(puurrtybot.ROLES_JOIN_TRAITS[pack_name.title()]))
             content = await prg.join_trait(new_role, ctx.author, pack_name, n)
             content = f"""{ctx.author.mention}, you have {n} qualifying cat{s}. {content}"""
         else:
