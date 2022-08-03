@@ -1,16 +1,13 @@
 from venv import create
 import puurrtybot
-import puurrtybot, os, discord, puurrtybot.initialize.initialize as pii
+import puurrtybot, os, discord
 from discord.ext import commands
 from discord_slash import SlashCommand, SlashContext
 from discord_slash.utils.manage_commands import create_choice, create_option
 import puurrtybot.users.get_functions as ugf
-import puurrtybot.databases.get_functions as dgf
 import puurrtybot.functions as pf
 import puurrtybot.assets.get_functions as agf
 import puurrtybot.users.user_updates as uup
-import puurrtybot.roles.packs as prg
-import time
 
 
 intents = discord.Intents.default()
@@ -45,9 +42,16 @@ async def roles(ctx):
     await ctx.send("\n".join([f"""{role.id}: {puurrtybot.GUILD.get_role(role.id)}""" for role in puurrtybot.GUILD.roles if role.id != 998148160243384321]))
 
 
-#@bot.command()
-#async def test(ctx):
-#    await ctx.send(content)
+@bot.command()
+async def test(ctx):
+    user_id = str(ctx.message.author.id)
+    count = 0
+    for asset in puurrtybot.USERS[user_id]['assets']:
+        try:
+            puurrtybot.ASSETS_SALES_HISTORY[asset]
+        except KeyError:
+            count += 1
+    await ctx.send(f"""You hold {count} minted diamond cats.""")
 
 
 @bot.command()

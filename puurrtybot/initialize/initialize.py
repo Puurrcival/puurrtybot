@@ -151,6 +151,7 @@ def initialize_mint_prices(mint_address = 'addr1vxk4szdzv6qxqne5k3m0wr4m5cewh2pn
             puurrtybot.ASSETS[asset]['mint_time'] = data
     ddf.save_assets()
 
+
 def initialize_databases():
     #initialize_assets_json()
     initialize_assets_addresses_json()

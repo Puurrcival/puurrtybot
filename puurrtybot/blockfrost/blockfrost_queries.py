@@ -19,14 +19,15 @@ blockfrost_http_codes = {
     500: """return code is used when our endpoints are having a problem."""}
 
 
-def blockfrost_check_response(status):
-    if status != 200:
-        raise Exception(f"""{blockfrost_http_codes[status]}""")
+def blockfrost_check_response(status_code):
+    if status_code != 200:
+        raise Exception(f"""{blockfrost_http_codes[status_code]}""")
 
 
 # https://docs.blockfrost.io/#tag/Health/paths/~1health~1clock/get
 def get_server_time() -> int:
     response = requests.get(f"""{network}/health/clock""", headers = headers)
+    blockfrost_check_response(response.status_code)
     return int(response.json()['server_time']/1000)
 
 
@@ -36,6 +37,7 @@ def get_asset_list_by_policy(policy: str, order: str = 'asc', max_pages: int = -
     asset_list = []
     while max_pages != page-1:
         response = requests.get(f"""{network}/assets/policy/{policy}?order={order}&page={page}""", headers=headers)
+        blockfrost_check_response(response.status_code)
         query_result = response.json()
         if len(query_result) > 0:
             asset_list += query_result
@@ -48,12 +50,14 @@ def get_asset_list_by_policy(policy: str, order: str = 'asc', max_pages: int = -
 # https://docs.blockfrost.io/#tag/Cardano-Assets/paths/~1assets~1{asset}/get
 def get_meta_by_asset(asset: str) -> dict:
     response = requests.get(f"""{network}/assets/{asset}""", headers=headers)
+    blockfrost_check_response(response.status_code)
     return response.json()
 
 
 # https://docs.blockfrost.io/#tag/Cardano-Assets/paths/~1assets~1{asset}~1addresses/get
 def get_address_by_asset(asset: str) -> str:
     response = requests.get(f"""{network}/assets/{asset}/addresses""", headers=headers)
+    blockfrost_check_response(response.status_code)
     return response.json()[0]['address']
 
 
@@ -61,6 +65,7 @@ def get_address_by_asset(asset: str) -> str:
 def get_stake_address_by_address(address: str) -> str:
     try:
         response = requests.get(f"""{network}/addresses/{address}""", headers=headers)
+        blockfrost_check_response(response.status_code)
         return response.json()['stake_address']
     except KeyError:
         return None
@@ -69,6 +74,7 @@ def get_stake_address_by_address(address: str) -> str:
 # https://docs.blockfrost.io/#tag/Cardano-Accounts/paths/~1accounts~1{stake_address}~1addresses/get
 def get_address_list_by_stake_address(stake_address: str) -> list:
     response = requests.get(f"""{network}/accounts/{stake_address}/addresses""", headers = headers)
+    blockfrost_check_response(response.status_code)
     query_result = response.json()
     if len(query_result)==0:
         return None
@@ -83,6 +89,7 @@ def get_tx_hash_list_by_address(address: str, order: str = 'desc', max_pages: in
     page = 1
     while max_pages != page:
         response = requests.get(f"""{network}/addresses/{address}/transactions?order={order}&page={page}""", headers=headers)
+        blockfrost_check_response(response.status_code)
         query_result = response.json()
         if len(query_result) > 0 and query_result[0]['block_time'] > time_window:
             tx_hash_list += query_result
@@ -98,6 +105,14 @@ def get_tx_hash_list_by_address(address: str, order: str = 'desc', max_pages: in
 # https://docs.blockfrost.io/#tag/Cardano-Transactions/paths/~1txs~1{hash}~1utxos/get
 def get_utxo_list_by_tx_hash(tx_hash: str) -> dict:
     response = requests.get(f"""{network}/txs/{tx_hash}/utxos""", headers = headers)
+    blockfrost_check_response(response.status_code)
+    return response.json()
+
+
+# https://docs.blockfrost.io/#tag/Cardano-Transactions/paths/~1txs~1{hash}/get
+def get_tx_by_tx_hash(tx_hash: str) -> str:
+    response = requests.get(f"""{network}/txs/{tx_hash}""", headers=headers)
+    blockfrost_check_response(response.status_code)
     return response.json()
 
 
@@ -110,12 +125,7 @@ def get_address_by_adahandle(address: str) -> str:
     return address.strip()
 
 
-
-def get_tx_by_tx_hash(tx_hash):
-    response = requests.get(f"""{network}/txs/{tx_hash}""", headers=headers)
-    return response.json()
-
-
+# in future this workaround-function could be replaced with a bech32 implementation
 def check_address_exists(address: str) -> bool:
     if 200 == requests.get(f"""https://pool.pm/wallet/{address}""", headers=headers).status_code:
         return True
