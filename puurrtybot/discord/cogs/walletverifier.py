@@ -6,6 +6,8 @@ import puurrtybot
 import puurrtybot.walletverifier.wallet_verify as wwv
 import puurrtybot.blockfrost.blockfrost_queries as bbq
 import puurrtybot.users.user_updates as uuu
+import puurrtybot.databases.database_functions as ddf
+import puurrtybot.roles.update_roles as rur
 
 
 HIDDEN_STATUS = True
@@ -29,7 +31,10 @@ class WalletVerifier(commands.Cog):
             await ctx.send(f"""<@{userid}>, transaction found, your address is now verified: {wallet}""", hidden=HIDDEN_STATUS)
             puurrtybot.USERS[str(userid)]['addresses'] += [wallet]
             uuu.user_update(str(userid))
-            self._tasks[userid].cancel() 
+            ddf.save_users()
+            await rur.update_roles_n_user(userid)
+            await rur.update_roles_traits_user(userid)
+            self._tasks[userid].cancel()
         else:
             print(f"""not verified {userid} {wallet}""")
             await ctx.send(f"""... still looking for transaction. \n Next check for transaction <t:{int(datetime.datetime.now().timestamp())+60*5}:R>.""", hidden=HIDDEN_STATUS)

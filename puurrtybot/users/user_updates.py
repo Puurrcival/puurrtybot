@@ -43,6 +43,7 @@ def user_update_addresses(user_id, save=False):
 
     puurrtybot.USERS[user_id]['addresses'] = list(set(puurrtybot.USERS[user_id]['addresses'] + address_list))
     puurrtybot.USERS[user_id]['stakes'] = list(set(puurrtybot.USERS[user_id]['stakes']))
+    ddf.save_users()
 
 
 def user_update_assets(user_id):
@@ -87,6 +88,13 @@ def user_update_traits(user_id):
                 except KeyError:
                     traits[k] = {}
 
+                
+                try:
+                    traits[k][v]+=1
+                except KeyError:
+                    traits[k][v] =1
+
+
                 # join_trait
                 if v in JOIN_TRAITS.keys():
                     v = puurrtybot.JOIN_TRAITS[v]
@@ -99,16 +107,6 @@ def user_update_traits(user_id):
                         except KeyError:
                             join_trait[v] = 1
 
-
-
-                try:
-                    traits[k][v]+=1
-                except KeyError:
-                    traits[k][v] =1
-    try:
-        traits['unique'] = traits['unique']['Yes']
-    except KeyError:
-        pass
     puurrtybot.USERS[user_id]['traits'] = traits
     puurrtybot.USERS[user_id]['join_trait'] = join_trait
 

@@ -42,17 +42,12 @@ async def ping(ctx):
 
 @bot.command()
 async def roles(ctx):
-    guild = puurrtybot.GUILD
-    await ctx.send("\n".join([f"""{role.id}: {guild.get_role(role.id)}""" for role in guild.roles if role.id != 998148160243384321]))
+    await ctx.send("\n".join([f"""{role.id}: {puurrtybot.GUILD.get_role(role.id)}""" for role in puurrtybot.GUILD.roles if role.id != 998148160243384321]))
 
 
-@bot.command()
-async def test(ctx):
-    guild = bot.get_guild(998148160243384321)
-    print(guild)
-    member = guild.get_member(ctx.message.author.id)
-    content = await prg.join_kitsune(guild, member.id)
-    await ctx.send(content)
+#@bot.command()
+#async def test(ctx):
+#    await ctx.send(content)
 
 
 @bot.command()

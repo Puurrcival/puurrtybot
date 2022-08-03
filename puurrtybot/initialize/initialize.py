@@ -3,6 +3,7 @@ import puurrtybot.blockfrost.blockfrost_queries as bbq
 import puurrtybot.twitter.twitter_queries as ttq
 import puurrtybot.functions as pf
 import puurrtybot.databases.database_functions as ddf
+import requests, time
 
 
 def delete_file(PATH):
@@ -15,14 +16,24 @@ def delete_file(PATH):
 def initialize_assets_json():
     puurrtybot.ASSETS = {}
     for asset in tqdm.tqdm(bbq.get_asset_list_by_policy(policy = puurrtybot.POLICY)):
-        puurrtybot.ASSETS[asset] = bbq.get_meta_by_asset(asset)
+        try:
+            puurrtybot.ASSETS[asset] = bbq.get_meta_by_asset(asset)
+        except requests.exceptions.ConnectionError:
+            print("Connection Error, retry in 300 seconds")
+            time.sleep(300)
+            puurrtybot.ASSETS[asset] = bbq.get_meta_by_asset(asset)
     ddf.save_assets()
 
 
 def initialize_assets_addresses_json():
     puurrtybot.ASSETS_ADDRESSES = {}
     for asset in tqdm.tqdm(puurrtybot.ASSETS.keys()):
-        address = bbq.get_address_by_asset(asset)
+        try:
+            address = bbq.get_address_by_asset(asset)
+        except requests.exceptions.ConnectionError:
+            print("Connection Error, retry in 300 seconds")
+            time.sleep(300)
+            address = bbq.get_address_by_asset(asset)
         try:
             puurrtybot.ASSETS_ADDRESSES[address] += [asset]
         except KeyError:
@@ -141,21 +152,10 @@ def initialize_mint_prices(mint_address = 'addr1vxk4szdzv6qxqne5k3m0wr4m5cewh2pn
     ddf.save_assets()
 
 def initialize_databases():
-    initialize_assets_json()
-    #initialize_assets_addresses_json()
+    #initialize_assets_json()
+    initialize_assets_addresses_json()
     #initialize_mint_prices()
-    initialize_market_sales_json()
-    initialize_asset_sales_history_json()
-    initialize_twitter_mentions()
+    #initialize_market_sales_json()
+    #initialize_asset_sales_history_json()
+    #initialize_twitter_mentions()
     pass
-
-
-#initialize_assets_addresses_json()
-#initialize_databases()
-
-
-#initialize_market_sales_json()
-#initialize_asset_sales_history_json()
-#initialize_market_listings_json()
-
-initialize_databases()

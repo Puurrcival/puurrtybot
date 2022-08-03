@@ -6,6 +6,7 @@ import puurrtybot.twitter.twitter_queries as ttq
 import puurrtybot.twitterverifier.twitter_verify as tvt
 import puurrtybot.users.user_updates as uuu
 import puurrtybot.users.get_functions as ugf
+import puurrtybot.databases.database_functions as ddf
 
 
 HIDDEN_STATUS = True
@@ -31,6 +32,7 @@ class TwitterVerifier(commands.Cog):
             await ctx.send(f"""<@{user_id}>, reply found, your twitter account is now verified: {twitter_handle}""", hidden=HIDDEN_STATUS)
             puurrtybot.USERS[str(user_id)]['twitter'] = {'handle': self.verification[user_id].twitter_handle, 'id': self.verification[user_id].twitter_id}
             uuu.save_user(str(user_id))
+            ddf.save_users()
             self._tasks[user_id].cancel()
         elif self.counter[user_id] > count:
             await ctx.send(f"""<@{user_id}>, verifying time exceeded.""", hidden=HIDDEN_STATUS)
