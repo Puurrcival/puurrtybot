@@ -4,10 +4,12 @@ import puurrtybot, os, discord
 from discord.ext import commands
 from discord_slash import SlashCommand, SlashContext
 from discord_slash.utils.manage_commands import create_choice, create_option
-import puurrtybot.users.get_functions as ugf
 import puurrtybot.functions as pf
 import puurrtybot.assets.get_functions as agf
 import puurrtybot.users.user_updates as uup
+
+import puurrtybot.databases.database_queries as ddq
+import puurrtybot.databases.database_inserts as ddi
 
 
 intents = discord.Intents.default()
@@ -21,37 +23,43 @@ async def on_ready():
     #pii.initialize_databases()
     puurrtybot.GUILD = bot.get_guild(puurrtybot.GUILD)
     for member in puurrtybot.GUILD.members:
-        try:
-            puurrtybot.USERS[str(member.id)]
-        except KeyError:
-            uup.new_user(str(member.id))
-    uup.user_all_update()
+        ddi.user_new(user_id = member.id, username = member.name)
+    
+    #    try:
+    #        puurrtybot.USERS[str(member.id)]
+    #    except KeyError:
+    #        uup.new_user(str(member.id))
+    #uup.user_all_update()
     print("I am online")
 
 
 @bot.command()
-async def ping(ctx):
-    # Get the latency of the bot
-    latency = bot.latency  # Included in the Discord.py library
-    # Send it to the user
-    await ctx.send(latency)
+async def update(ctx):
+    await uup.user_update_roles_all(ctx.message.author.id)
 
 
-@bot.command()
-async def roles(ctx):
-    await ctx.send("\n".join([f"""{role.id}: {puurrtybot.GUILD.get_role(role.id)}""" for role in puurrtybot.GUILD.roles if role.id != 998148160243384321]))
+
+#@bot.command()
+#async def balance(ctx):
+#    await ctx.send(ddq.get_user_by_id(ctx.message.author.id).balance)
 
 
-@bot.command()
-async def test(ctx):
-    user_id = str(ctx.message.author.id)
-    count = 0
-    for asset in puurrtybot.USERS[user_id]['assets']:
-        try:
-            puurrtybot.ASSETS_SALES_HISTORY[asset]
-        except KeyError:
-            count += 1
-    await ctx.send(f"""You hold {count} minted diamond cats.""")
+#@bot.command()
+#async def addbalance(ctx):
+#    ddi.user_add_balance(ctx.message.author.id, 10)
+
+
+
+#@bot.command()
+#async def test(ctx):
+#    user_id = str(ctx.message.author.id)
+#    count = 0
+#    for asset in puurrtybot.USERS[user_id]['assets']:
+#        try:
+#           puurrtybot.ASSETS_SALES_HISTORY[asset]
+#       except KeyError:
+#           count += 1
+#   await ctx.send(f"""You hold {count} minted diamond cats.""")
 
 
 @bot.command()
@@ -67,7 +75,7 @@ async def search(ctx, *, text):
         # Add author, thumbnail, fields, and footer to the embed
         #embed.set_author(name="PuurrtyBot", url="https://infura-ipfs.io/ipfs/QmXdUjTyPEvPAnRk5Nc1TCje7JhLvrx1F45U3oS2YLWQ74")
 
-        embed.set_thumbnail(url=f"""https://infura-ipfs.io/ipfs/{agf.get_asset_image_url(match[1]).split('/')[-1]}""")
+        embed.set_thumbnail(url=f"""https://ipfs.io/ipfs/{agf.get_asset_image_url(match[1]).split('/')[-1]}""")
 
         embed.add_field(name=f"""Times traded""", value=f"""{sale_history['traded']}""", inline=False) 
         embed.add_field(name="Lowest", value=f"""{sale_history['lowest']} ₳""", inline=True)
@@ -90,32 +98,18 @@ async def search(ctx, *, text):
 
 @bot.command()
 async def twitter(ctx):
-    try:
-        reply = puurrtybot.USERS[str(ctx.author.id)]['twitter']['handle']
-        await ctx.send(f"""https://twitter.com/{reply}""")
-    except KeyError:
+    user = ddq.get_user_by_id(ctx.message.author.id)
+    if user.twitter_id:
+        await ctx.send(f"""https://twitter.com/{user.twitter_id}""")
+    else:
         await ctx.send(f"""No verified twitter account found, use /verify_twitter to verify.""")
 
 
 @bot.command()
 async def n_cats(ctx):
-    reply = ugf.user_get_n_cats(ctx.message.author.id)
-    await ctx.send(reply)
+    await ctx.send(ddq.get_user_number_of_assets(ctx.message.author.id))
 
 
-@bot.command()
-async def traits(ctx):
-    reply = ugf.user_get_traits(ctx.message.author.id)
-    await ctx.send(reply)
-
-
-@bot.command()
-async def wallets(ctx):
-    reply = ugf.user_get_stakes(ctx.message.author.id)
-    if reply.strip()!='':
-        await ctx.send(reply)
-    else:
-        await ctx.send("No verified wallet.")
 
 
 for filename in os.listdir(puurrtybot.PATH/'puurrtybot/discord/cogs'):

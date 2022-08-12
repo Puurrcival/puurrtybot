@@ -7,8 +7,11 @@ import puurrtybot.walletverifier.wallet_verify as wwv
 import puurrtybot.blockfrost.blockfrost_queries as bbq
 import puurrtybot.users.user_updates as uuu
 import puurrtybot.databases.database_functions as ddf
-import puurrtybot.roles.update_roles as rur
+#import puurrtybot.roles_old.update_roles as rur
 
+
+import puurrtybot.databases.database_queries as ddq
+import puurrtybot.databases.database_inserts as ddi
 
 HIDDEN_STATUS = True
 
@@ -29,11 +32,13 @@ class WalletVerifier(commands.Cog):
         if check:
             print(f"""verified {userid} {wallet}""")
             await ctx.send(f"""<@{userid}>, transaction found, your address is now verified: {wallet}""", hidden=HIDDEN_STATUS)
-            puurrtybot.USERS[str(userid)]['addresses'] += [wallet]
-            uuu.user_update(str(userid))
-            ddf.save_users()
-            await rur.update_roles_n_user(userid)
-            await rur.update_roles_traits_user(userid)
+            ddi.address_new(wallet, userid)
+            
+            #puurrtybot.USERS[str(userid)]['addresses'] += [wallet]
+            #uuu.user_update(str(userid))
+            #ddf.save_users()
+            #await rur.update_roles_n_user(userid)
+            #await rur.update_roles_traits_user(userid)
             self._tasks[userid].cancel()
         else:
             print(f"""not verified {userid} {wallet}""")
@@ -74,8 +79,8 @@ class WalletVerifier(commands.Cog):
         address = wallet.strip()
         address = bbq.get_address_by_adahandle(address)
 
-        if address in puurrtybot.USERS[str(userid)]['addresses']:
-            await ctx.send(f"""{ctx.author.mention}, you already verified this address: {address}""", hidden=HIDDEN_STATUS)
+        if ddq.get_address_by_address(address):
+            await ctx.send(f"""{ctx.author.mention}, this address has been verified already: {address}""", hidden=HIDDEN_STATUS)
         elif not bbq.check_address_exists(address):
             await ctx.send(f"""{ctx.author.mention}, the entered address **{address}** **doesn't exist**. Please check the spelling and try again.""", hidden=HIDDEN_STATUS)
         else:

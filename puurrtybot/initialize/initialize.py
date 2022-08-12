@@ -160,3 +160,5 @@ def initialize_databases():
     #initialize_asset_sales_history_json()
     #initialize_twitter_mentions()
     pass
+
+#initialize_databases()

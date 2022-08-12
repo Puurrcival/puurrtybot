@@ -4,10 +4,10 @@ from discord_slash.utils.manage_commands import create_option
 import datetime, puurrtybot
 import puurrtybot.twitter.twitter_queries as ttq
 import puurrtybot.twitterverifier.twitter_verify as tvt
-import puurrtybot.users.user_updates as uuu
-import puurrtybot.users.get_functions as ugf
-import puurrtybot.databases.database_functions as ddf
 
+
+import puurrtybot.databases.database_queries as ddq
+import puurrtybot.databases.database_inserts as ddi
 
 HIDDEN_STATUS = True
 
@@ -30,9 +30,7 @@ class TwitterVerifier(commands.Cog):
         twitter_handle = self.verification[user_id].twitter_handle
         if check:
             await ctx.send(f"""<@{user_id}>, reply found, your twitter account is now verified: {twitter_handle}""", hidden=HIDDEN_STATUS)
-            puurrtybot.USERS[str(user_id)]['twitter'] = {'handle': self.verification[user_id].twitter_handle, 'id': self.verification[user_id].twitter_id}
-            uuu.save_user(str(user_id))
-            ddf.save_users()
+            ddi.user_change_twitter(user_id, self.verification[user_id].twitter_id, self.verification[user_id].twitter_handle)
             self._tasks[user_id].cancel()
         elif self.counter[user_id] > count:
             await ctx.send(f"""<@{user_id}>, verifying time exceeded.""", hidden=HIDDEN_STATUS)
@@ -70,7 +68,7 @@ class TwitterVerifier(commands.Cog):
         twitter_handle = twitter_handle.strip('@')
         twitter_id = ttq.get_id_by_user(twitter_handle)
 
-        if ugf.user_get_twitter(user_id, "id") == twitter_id:
+        if ddq.get_user_by_id(user_id).twitter_id:
             await ctx.send(f"""{ctx.author.mention}, {twitter_handle} already verified""", hidden=HIDDEN_STATUS)
         elif not twitter_id:
              await ctx.send(f"""{ctx.author.mention}, the entered twitter name **{twitter_handle}** **doesn't exist**. Please check the spelling and try again.""", hidden=HIDDEN_STATUS)        

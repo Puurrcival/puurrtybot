@@ -9,14 +9,14 @@ network = 'https://cardano-mainnet.blockfrost.io/api/v0'
 
 # https://docs.blockfrost.io/#section/Errors
 blockfrost_http_codes = { 
-    400: """return code is used when the request is not valid.""",
-    402: """return code is used when the projects exceed their daily request limit.""",
-    403: """return code is used when the request is not authenticated.""",
-    404: """return code is used when the resource doesn't exist.""",
-    418: """return code is used when the user has been auto-banned for flooding too much after previously receiving error code 402 or 429.""",
-    425: """return code is used when the user has submitted a transaction when the mempool is already full, not accepting new txs straight away.""",
-    429: """return code is used when the user has sent too many requests in a given amount of time and therefore has been rate-limited.""",
-    500: """return code is used when our endpoints are having a problem."""}
+    400: """The request is not valid.""",
+    402: """The project exceeded their daily request limit.""",
+    403: """The request is not authenticated.""",
+    404: """The resource doesn't exist.""",
+    418: """The user has been auto-banned for flooding too much after previously receiving error code 402 or 429.""",
+    425: """The user has submitted a transaction when the mempool is already full, not accepting new txs straight away.""",
+    429: """The user has sent too many requests in a given amount of time and therefore has been rate-limited.""",
+    500: """Our endpoints are having a problem."""}
 
 
 def blockfrost_check_response(status_code):

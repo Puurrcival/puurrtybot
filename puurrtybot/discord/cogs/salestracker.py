@@ -1,6 +1,7 @@
 from discord.ext import commands, tasks
 import time, puurrtybot.twitter.twitter_functions as ttf, puurrtybot.markets.market_queries as mmq, puurrtybot, datetime
-import puurrtybot.assets.get_functions as agf
+import puurrtybot.databases.database_queries as ddq
+import puurrtybot.databases.database_inserts as ddi
 
 
 class SalesTracker(commands.Cog):
@@ -10,27 +11,29 @@ class SalesTracker(commands.Cog):
 
     async def static_loop(self):
         print('SalesTracker running')
-        new_sales = mmq.get_untracked_sales_jpgstore()
+        mmq.get_untracked_sales_jpgstore()
 
+        new_sales = ddq.get_sales(False)
+        new_sales.sort(key=lambda x: x.timestamp, reverse=False)
         for sale in new_sales:
-            display_name = puurrtybot.ASSETS[sale['asset']]['onchain_metadata']['name']
+            asset = ddq.get_asset_by_id(sale.asset_id)
+            display_name = asset.name
+            asset.sales.sort(key=lambda x: x.timestamp, reverse=False)
+            sales_history = [sale for sale in asset.sales if sale.tracked]
 
-            asset_sales_history = agf.get_asset_sale_history(sale['asset'])
-            print(asset_sales_history)
-            if asset_sales_history['bought']:
-                bought_mint = "🛒 Seller bought"
-                bought_time = datetime.datetime.utcfromtimestamp(asset_sales_history['bought_time'])
-            else:
-                asset_sales_history['bought'] = puurrtybot.ASSETS[sale['asset']]['mint_price']
+            if not sales_history:
+                bought = asset.mint_price
                 bought_mint = "⚒️ Seller minted"
-                bought_time = datetime.datetime.utcfromtimestamp(puurrtybot.ASSETS[sale['asset']]['mint_time'])
-
-            diff = asset_sales_history['last'] - asset_sales_history['bought']
-
-            last_time = datetime.datetime.utcfromtimestamp(asset_sales_history['last_time'])
+                bought_time = datetime.datetime.utcfromtimestamp(asset.mint_time)
+            else:
+                bought = sales_history[-1].amount
+                bought_mint = "🛒 Seller bought"
+                bought_time = datetime.datetime.utcfromtimestamp(sales_history[-1].timestamp)
+            diff = sale.amount - bought
+            last_time = datetime.datetime.utcfromtimestamp(sale.timestamp)
             hodl = last_time - bought_time
             hours, minutes, _ = str(datetime.timedelta(seconds=hodl.seconds)).split(':')
-
+            
             if int(hodl.days) != 0:
                 days = f"""{hodl.days} days, """
             else:
@@ -39,23 +42,27 @@ class SalesTracker(commands.Cog):
                 hours = f"""{int(hours)} hours and """
             else:
                 hours = ""   
-            diff = asset_sales_history['last'] - asset_sales_history['bought']
-            if asset_sales_history['bought'] == 0:
-                profit = f"""🎁 Seller took a profit of {diff}₳."""
-            else:
-                percentage = 100/asset_sales_history['bought']*asset_sales_history['last']
+                
+            
+            diff = diff/1_000_000
+            bought = bought/1_000_000
+            saleamount = sale.amount/1_000_000
+            if bought != 0:
+                percentage = 100/bought*saleamount
                 if diff  < 0:
                     profit = f"""📉 Seller took a loss of {diff}₳ (-{round(100-percentage, 2)}%)."""
                 else:
                     profit = f"""📈 Seller took a profit of {diff}₳ ({round(percentage-100, 2)}%)."""
-
-            bought_string = f"""\n\n{bought_mint} for {asset_sales_history['bought']}₳."""
+            else:
+                profit = f"""📈 Seller took a profit of {diff}₳."""
+                
+            bought_string = f"""\n\n{bought_mint} for {bought}₳."""
             hodl_string = f"""\n💰 Seller hodl for {days}{hours}{int(minutes)} minutes."""
             content_detail = f"""{bought_string}{hodl_string}\n{profit}\n"""
 
-            content=f"""🐱 {display_name} just sold for {sale['amount']}₳!{content_detail}"""
-            print(content)
-            tweet_id = ttf.tweet_sale(content, sale['asset'])
+            content=f"""🐱 {display_name} just sold for {saleamount}₳!{content_detail}"""
+            ddi.sale_tracked(sale.tx_hash)
+            tweet_id = ttf.tweet_sale(content, sale.asset_id)
             await self.channel.send(f"""https://twitter.com/PuurrtyBot/status/{tweet_id}""")
             print("sent sale tweet")
             time.sleep(1)

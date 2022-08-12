@@ -1,5 +1,5 @@
 from discord.ext import commands, tasks
-import puurrtybot.roles.update_roles as rur
+#import puurrtybot.roles_old.update_roles as rur
 
 
 class RoleManager(commands.Cog):
@@ -8,8 +8,8 @@ class RoleManager(commands.Cog):
 
     async def static_loop(self):
         print('RoleManager running')
-        await rur.update_roles_n()
-        await rur.update_roles_traits()
+        #await rur.update_roles_n()
+        #await rur.update_roles_traits()
 
 
     @commands.Cog.listener()

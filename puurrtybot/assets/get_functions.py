@@ -16,7 +16,7 @@ def get_asset_image_url(asset: str):
 
 
 def get_asset_image(asset: str, basewidth: int = 1200, stream: bool = True):
-    image_url = f"""https://infura-ipfs.io/ipfs/{get_asset_image_url(asset).split('/')[-1]}"""
+    image_url = f"""https://ipfs.io/ipfs/{get_asset_image_url(asset).split('/')[-1]}"""
     image = Image.open(BytesIO(requests.get(image_url).content))
     wpercent = (basewidth/float(image.size[0]))
     hsize = int((float(image.size[1])*float(wpercent)))
