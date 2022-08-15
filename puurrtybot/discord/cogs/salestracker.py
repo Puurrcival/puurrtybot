@@ -1,5 +1,5 @@
 from discord.ext import commands, tasks
-import time, puurrtybot.twitter.twitter_functions as ttf, puurrtybot.markets.market_queries as mmq, puurrtybot, datetime
+import time, puurrtybot.twitter.twitter_functions as ttf, puurrtybot.markets.market_queries as mmq, datetime
 import puurrtybot.databases.database_queries as ddq
 import puurrtybot.databases.database_inserts as ddi
 
@@ -61,8 +61,8 @@ class SalesTracker(commands.Cog):
             content_detail = f"""{bought_string}{hodl_string}\n{profit}\n"""
 
             content=f"""🐱 {display_name} just sold for {saleamount}₳!{content_detail}"""
-            ddi.sale_tracked(sale.tx_hash)
             tweet_id = ttf.tweet_sale(content, sale.asset_id)
+            ddi.sale_tracked(sale.tx_hash)
             await self.channel.send(f"""https://twitter.com/PuurrtyBot/status/{tweet_id}""")
             print("sent sale tweet")
             time.sleep(1)

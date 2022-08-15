@@ -35,7 +35,7 @@ def get_untracked_listings_jpgstore():
     if not ddq.get_listing_by_id(f"""{last_listing['listed_at']}_{last_listing['asset_name']}"""):
         listings = requests.get(f"""https://server.jpgstoreapis.com/search/tokens?policyIds=[%22{puurrtybot.POLICY}%22]&saleType=buy-now&sortBy=recently-listed&traits=%7B%7D&nameQuery=&verified=default&pagination=%7B%7D&size=300""").json()['tokens']
         for listing in listings:
-            if ddq.get_listing_by_id(f"""{last_listing['listed_at']}_{listing['asset_name']}"""):
+            if ddq.get_listing_by_id(f"""{listing['listed_at']}_{listing['asset_name']}"""):
                 break;
             else:
                 untracked_listings[f"""{listing['listed_at']}_{listing['asset_name']}"""] = listing
@@ -44,6 +44,6 @@ def get_untracked_listings_jpgstore():
             timestamp = pf.time_to_timestamp(listing['created_at'].split('.')[0].split('+')[0].replace('T',' '))
             amount = int(listing['listing_lovelace'])/1_000_000
             untracked_listings[listing_id] = {'listing_id': listing_id, 'timestamp':timestamp, 'asset': listing['asset_name'], 'amount':amount, 'market':'jpgstore'}
-            ddi.listing_new(listing_id = listing_id, asset_id = listing['asset_name'], timestamp = timestamp, amount = amount)
-    return untracked_listings
+            #ddi.listing_new(listing_id = listing_id, asset_id = listing['asset_name'], timestamp = timestamp, amount = int(listing['listing_lovelace']))
+    #return untracked_listings
       

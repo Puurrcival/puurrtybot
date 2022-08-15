@@ -1,4 +1,4 @@
-from puurrtybot.databases.database_initialize import Address, Asset, User, Sale, Listing, Session
+from puurrtybot.databases.database_initialize import Address, Asset, User, Sale, Listing, Tweet, Session
 import puurrtybot.databases.database_queries as ddq
 import puurrtybot.blockfrost.blockfrost_queries as bbq
 
@@ -40,6 +40,21 @@ def sale_tracked(tx_hash):
     Session.commit()
 
 
-def listing_new(listing_id, asset_id, timestamp, amount, tracked = True):
+def listing_new(listing_id, asset_id, timestamp, amount, tracked = False):
     Session.add(Listing(listing_id = listing_id, asset_id = asset_id, timestamp = timestamp, amount = amount, tracked = tracked))
+    Session.commit()
+
+
+def listing_tracked(listing_id):
+    Session.query(Listing).filter(Listing.listing_id == listing_id).update({'tracked': True})
+    Session.commit()
+
+
+def tweet_new(tweet_id, author_id, in_reply_to_user_id = None, tracked = False):
+    Session.add(Tweet(tweet_id = tweet_id, author_id = author_id, in_reply_to_user_id = in_reply_to_user_id, tracked = tracked))
+    Session.commit()
+
+
+def tweet_tracked(tweet_id):
+    Session.query(Tweet).filter(Tweet.tweet_id == tweet_id).update({'tracked': True})
     Session.commit()

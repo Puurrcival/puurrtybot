@@ -39,10 +39,15 @@ async def update(ctx):
 
 
 
-#@bot.command()
-#async def balance(ctx):
-#    await ctx.send(ddq.get_user_by_id(ctx.message.author.id).balance)
+@bot.command()
+async def balance(ctx):
+    await ctx.send(ddq.get_user_by_id(ctx.message.author.id).balance)
 
+
+@bot.command()
+async def party(ctx):
+    if ctx.message.author.id == 642352900357750787:
+        await ctx.send("""A party is about to start join with :tada:""")
 
 #@bot.command()
 #async def addbalance(ctx):

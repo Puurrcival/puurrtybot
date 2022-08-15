@@ -1,4 +1,6 @@
-import datetime, puurrtybot, requests, puurrtybot.databases.database_functions as ddf, random
+import datetime, puurrtybot, requests, random
+import puurrtybot.databases.database_queries as ddq
+import puurrtybot.databases.database_inserts as ddi
 headers = {"Authorization": "Bearer {}".format(puurrtybot.TWITTER_BEARER_TOKEN)}
 network = 'https://api.twitter.com/2'
 
@@ -55,22 +57,17 @@ def get_mentions_puurrtycats():
 
 
 def get_untracked_mentions_puurrtycats():
-    untracked_mentions = []
-    try:
-        tweets = get_mentions_puurrtycats()['data']
-        for tweet in tweets:
-            try:
-                tweet['in_reply_to_user_id']
-            except KeyError:
-                try:
-                    puurrtybot.TWITTER_MENTIONS[tweet['id']]
-                except KeyError:
-                    untracked_mentions.append(tweet)
-            puurrtybot.TWITTER_MENTIONS[tweet['id']] = tweet
-        ddf.save_twitter_mentions()
-    except KeyError:
-        pass        
-    return untracked_mentions
+    tweets = get_mentions_puurrtycats()['data']
+    for tweet in tweets:
+        try:
+            in_reply_to_user_id = int(tweet['in_reply_to_user_id'])
+        except KeyError:
+            in_reply_to_user_id = None
+        tweet_id = int(tweet['id'])
+        author_id = int(tweet['author_id'])
+        
+        if not ddq.get_tweet_by_id(tweet_id):
+            ddi.tweet_new(tweet_id, author_id, in_reply_to_user_id = in_reply_to_user_id, tracked = False)
 
 
 def get_twitter_id_list_by_retweet(tweet_id):

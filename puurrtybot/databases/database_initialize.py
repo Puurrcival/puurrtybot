@@ -185,6 +185,23 @@ class Listing:
     tracked: bool = False  
     
 
+@mapper_registry.mapped
+@dataclass   
+class Tweet:
+    __table__ = Table(
+        "tweets",
+        mapper_registry.metadata,
+        Column('tweet_id', Integer(), primary_key=True),
+        Column('author_id', Integer()),
+        Column('in_reply_to_user_id', Integer()),
+        Column('tracked', Boolean(), default=False),
+    )
+    tweet_id: int = None
+    author_id: int = None
+    in_reply_to_user_id: int = None
+    tracked: bool = False 
+
+
 Base.metadata.create_all(engine)
 Session = Session(bind=engine)
 

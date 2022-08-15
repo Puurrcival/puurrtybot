@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands, tasks
 import time, puurrtybot.markets.market_queries as mmq
 import puurrtybot.databases.database_queries as ddq
+import puurrtybot.databases.database_inserts as ddi
 
 
 class ListingsTracker(commands.Cog):
@@ -11,14 +12,15 @@ class ListingsTracker(commands.Cog):
 
     async def static_loop(self):
         print('ListingsTracker running')
-        new_listings = mmq.get_untracked_listings_jpgstore()
+        new_listings = mmq.ddq.get_listings()
 
-        for value in new_listings.values():
-            asset = ddq.get_asset_by_id(value['asset'])
+        for listing in new_listings:
+            asset = ddq.get_asset_by_id(listing.asset_id)
             display_name = asset.name
-            embed=discord.Embed(title=f"""{display_name} just listed for {value['amount']}₳!""", url=f"""https://www.jpg.store/asset/{value['asset']}""", description="", color=0x109319)
+            embed=discord.Embed(title=f"""{display_name} just listed for {listing.amount/1_000_000}₳!""", url=f"""https://www.jpg.store/asset/{listing.asset_id}""", description="", color=0x109319)
             embed.set_image(url=f"""https://ipfs.io/ipfs/{asset.img_url.split('/')[-1]}""")
             await self.channel.send(embed=embed)
+            ddi.listing_tracked(listing.listing_id)
             time.sleep(1)
 
 

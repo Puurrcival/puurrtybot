@@ -1,4 +1,4 @@
-from puurrtybot.databases.database_initialize import Listing, Session, User, Address, Asset, Sale
+from puurrtybot.databases.database_initialize import Listing, Session, User, Address, Asset, Sale, Tweet
 from sqlalchemy import or_
 import puurrtybot
 
@@ -6,8 +6,16 @@ def get_user_by_id(user_id):
     return Session.query(User).filter(User.user_id == user_id).first()
 
 
+def get_user_by_twitter_id(twitter_id):
+    return Session.query(User).filter(User.twitter_id == twitter_id).first()
+
+
 def get_asset_by_id(asset_id):
     return Session.query(Asset).filter(Asset.asset_id == asset_id).first()
+
+
+def get_tweet_by_id(tweet_id):
+    return Session.query(Tweet).filter(Tweet.tweet_id == tweet_id).first()
 
 
 def get_user_number_of_assets(user_id):
@@ -26,6 +34,18 @@ def get_sales(tracked = False):
     sales = Session.query(Sale).filter(Sale.tracked == tracked).all()
     sales.sort(key=lambda x: x.timestamp, reverse=False)
     return sales
+
+
+def get_listings(tracked = False):
+    listings = Session.query(Listing).filter(Listing.tracked == tracked).all()
+    listings.sort(key=lambda x: x.timestamp, reverse=False)
+    return listings
+
+
+def get_tweets(tracked = False):
+    tweets = Session.query(Tweet).filter(Tweet.tracked == tracked).all()
+    #listings.sort(key=lambda x: x.timestamp, reverse=False)
+    return tweets
 
 
 def get_sales_history(asset_id):
