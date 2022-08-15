@@ -14,6 +14,10 @@ def get_asset_by_id(asset_id):
     return Session.query(Asset).filter(Asset.asset_id == asset_id).first()
 
 
+def get_asset_all():
+    return Session.query(Asset).all()
+
+
 def get_tweet_by_id(tweet_id):
     return Session.query(Tweet).filter(Tweet.tweet_id == tweet_id).first()
 

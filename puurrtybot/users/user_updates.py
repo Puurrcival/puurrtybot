@@ -3,7 +3,7 @@ import puurrtybot.blockfrost.blockfrost_queries as bbq
 import puurrtybot.databases.database_queries as ddq
 import puurrtybot.databases.database_inserts as ddi
 
-from puurrtybot import ROLES_BASED_ON_TRAITS, ROLES_BASED_ON_FAMILY, ROLES_NUMBER_OF_CATS
+from puurrtybot import ROLES_BASED_ON_TRAITS, ROLES_BASED_ON_FAMILY, ROLES_NUMBER_OF_CATS, ROLES_NUMBER_OF_CATS_DICT
 
 
 async def user_update_role_number_of_cats(user_id):

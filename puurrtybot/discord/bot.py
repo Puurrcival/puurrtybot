@@ -45,6 +45,11 @@ async def balance(ctx):
 
 
 @bot.command()
+async def bal(ctx):
+    await balance(ctx)
+
+
+@bot.command()
 async def party(ctx):
     if ctx.message.author.id == 642352900357750787:
         await ctx.send("""A party is about to start join with :tada:""")
@@ -105,7 +110,7 @@ async def search(ctx, *, text):
 async def twitter(ctx):
     user = ddq.get_user_by_id(ctx.message.author.id)
     if user.twitter_id:
-        await ctx.send(f"""https://twitter.com/{user.twitter_id}""")
+        await ctx.send(f"""https://twitter.com/{user.twitter_handle}""")
     else:
         await ctx.send(f"""No verified twitter account found, use /verify_twitter to verify.""")
 

@@ -154,7 +154,7 @@ def initialize_mint_prices(mint_address = 'addr1vxk4szdzv6qxqne5k3m0wr4m5cewh2pn
 
 def initialize_databases():
     #initialize_assets_json()
-    initialize_assets_addresses_json()
+    #initialize_assets_addresses_json()
     #initialize_mint_prices()
     #initialize_market_sales_json()
     #initialize_asset_sales_history_json()

@@ -1,10 +1,16 @@
 from puurrtybot.databases.database_initialize import Address, Asset, User, Sale, Listing, Tweet, Session
 import puurrtybot.databases.database_queries as ddq
 import puurrtybot.blockfrost.blockfrost_queries as bbq
+import puurrtybot.functions as func
 
 
 def user_change_balance(user_id, amount):
     Session.query(User).filter(User.user_id == user_id).update({'balance': User.balance + amount})
+    Session.commit()
+
+
+def asset_change_address(asset_id, address):
+    Session.query(Asset).filter(Asset.asset_id == asset_id).update({'address': address, 'updated_on':func.get_utc_time()})
     Session.commit()
 
 
