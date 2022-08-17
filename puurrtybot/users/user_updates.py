@@ -27,7 +27,7 @@ async def user_update_role_number_of_cats(user_id):
 
 async def user_update_roles_all(user_id):
     member = puurrtybot.GUILD.get_member(int(user_id))
-    member_role_ids = (role.id for role in member.roles)
+    member_role_ids = [role.id for role in member.roles]
 
     # ROLES_NUMBER_OF_CATS
     await user_update_role_number_of_cats(user_id)
@@ -45,7 +45,7 @@ async def user_update_roles_all(user_id):
 
 
     # ROLES_BASED_ON_FAMILY
-    family_roles = [role_id for role_id in member_role_ids if member_role_ids in ROLES_BASED_ON_FAMILY]
+    family_roles = [role_id for role_id in member_role_ids if role_id in ROLES_BASED_ON_FAMILY]
     for role_id in family_roles:
         if 0 == ddq.get_trait_role_qualify(role_id, user_id):
             await member.remove_roles(puurrtybot.GUILD.get_role(role_id))   

@@ -14,8 +14,8 @@ def get_asset_by_id(asset_id):
     return Session.query(Asset).filter(Asset.asset_id == asset_id).first()
 
 
-def get_asset_all():
-    return Session.query(Asset).all()
+def get_asset_all(timestamp = 999_999_999):
+    return Session.query(Asset).filter(Asset.updated_on < timestamp).all()
 
 
 def get_tweet_by_id(tweet_id):
@@ -27,7 +27,7 @@ def get_user_number_of_assets(user_id):
 
 
 def get_address_by_address(address):
-    return Session.query(Address).filter(Address.address == address)
+    return Session.query(Address).filter(Address.address == address).first()
 
 
 def get_sale_by_tx_hash(tx_hash):
@@ -64,7 +64,20 @@ def get_listing_by_id(listing_id):
 
 ### Roles ###
 def get_trait_role_qualify(role_id, user_id):
-    traits = puurrtybot.ROLES_BASED_ON_TRAITS[role_id]
+    try:
+        traits = puurrtybot.ROLES_BASED_ON_FAMILY[role_id]
+    except KeyError:
+        traits = puurrtybot.ROLES_BASED_ON_TRAITS[role_id]
+    result = Session.query(Asset
+                    ).filter(User.user_id == Address.user_id
+                    ).filter(Address.address == Asset.address
+                    ).filter(User.user_id == user_id
+                    ).filter( or_(getattr(Asset, k)==v for k,v in traits)
+                    ).all()
+    return len(result)
+
+
+def get_traits_role_qualify(traits, user_id):
     result = Session.query(Asset
                     ).filter(User.user_id == Address.user_id
                     ).filter(Address.address == Asset.address

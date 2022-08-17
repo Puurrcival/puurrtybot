@@ -48,7 +48,7 @@ def get_asset_sale_history(asset):
             bought_time = timestamps[1]
         else:
             bought = bought_time = None
-    except (KeyError, IndexError):
+    except (KeyError, IndexError, ValueError):
         traded = volume = highest = lowest = 0
         last = bought = last_time = bought_time = None
 
