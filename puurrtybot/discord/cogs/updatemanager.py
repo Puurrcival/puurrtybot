@@ -1,9 +1,10 @@
 import discord
 from discord.ext import commands, tasks
-import puurrtybot.blockfrost.blockfrost_queries as bbq
+import puurrtybot.api.blockfrost as bbq
 import puurrtybot.databases.database_queries as ddq
 import puurrtybot.databases.database_inserts as ddi
 import puurrtybot.functions as func
+import tqdm
 
 
 class UpdateManager(commands.Cog):
@@ -14,7 +15,7 @@ class UpdateManager(commands.Cog):
     async def static_loop(self):
         print('UpdateManager running')
         outdated_assets = ddq.get_asset_all(func.get_utc_time()-24*60*60)
-        for asset in outdated_assets:
+        for asset in tqdm.tqdm(outdated_assets):
             address = bbq.get_address_by_asset(asset.asset_id)
             ddi.asset_change_address(asset.asset_id, address)
 

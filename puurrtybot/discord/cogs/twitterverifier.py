@@ -2,7 +2,7 @@ from discord.ext import commands, tasks
 from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
 import datetime, puurrtybot
-import puurrtybot.twitter.twitter_queries as ttq
+import puurrtybot.api.twitter as ttq
 import puurrtybot.twitterverifier.twitter_verify as tvt
 
 

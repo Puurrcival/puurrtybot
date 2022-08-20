@@ -1,6 +1,6 @@
 import puurrtybot.functions as f
 import os, puurrtybot, json, random
-import puurrtybot.twitter.twitter_queries as ttq
+import puurrtybot.api.twitter as ttq
 verify_tweet_id = '1549207713594343425'
 verify_conversation_id = ttq.get_conversation_id_by_tweet_id(verify_tweet_id)
 

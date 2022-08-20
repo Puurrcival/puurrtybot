@@ -1,4 +1,4 @@
-import puurrtybot.blockfrost.blockfrost_queries as bbq, random
+import puurrtybot.api.blockfrost as bbq, random
 import puurrtybot.functions as f
 import os, puurrtybot, json
 

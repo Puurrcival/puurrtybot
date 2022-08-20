@@ -1,5 +1,5 @@
 import puurrtybot
-import puurrtybot.blockfrost.blockfrost_queries as bbq
+import puurrtybot.api.blockfrost as bbq
 import puurrtybot.databases.database_queries as ddq
 import puurrtybot.databases.database_inserts as ddi
 

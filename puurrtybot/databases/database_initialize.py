@@ -5,7 +5,7 @@ from datetime import datetime
 from dataclasses import dataclass, field
 from typing import List, Optional
 import tqdm
-import puurrtybot.blockfrost.blockfrost_queries as bbq
+import puurrtybot.api.blockfrost as bbq
 from puurrtybot.assets import meta
 
 mapper_registry = registry()

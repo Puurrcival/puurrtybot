@@ -1,6 +1,6 @@
 from puurrtybot.databases.database_initialize import Address, Asset, User, Sale, Listing, Tweet, Session
 import puurrtybot.databases.database_queries as ddq
-import puurrtybot.blockfrost.blockfrost_queries as bbq
+import puurrtybot.api.blockfrost as bbq
 import puurrtybot.functions as func
 
 

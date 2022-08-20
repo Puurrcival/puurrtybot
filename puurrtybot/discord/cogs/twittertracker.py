@@ -1,7 +1,8 @@
 from discord.ext import commands, tasks
-import puurrtybot.twitter.twitter_queries as ttq, time
+import puurrtybot.api.twitter as ttq, time
 import puurrtybot.databases.database_queries as ddq
 import puurrtybot.databases.database_inserts as ddi
+from puurrtybot import TWITTER_ID
 
 class TwitterTracker(commands.Cog):
     def __init__(self, client):
@@ -9,7 +10,7 @@ class TwitterTracker(commands.Cog):
 
     async def static_loop(self):
         print('TwitterTracker running')
-        ttq.get_untracked_mentions_puurrtycats()
+        ttq.store_untracked_mentions_by_tweet_id(TWITTER_ID)
         new_tweets = ddq.get_tweets()
         for tweet in new_tweets:
             if not tweet.in_reply_to_user_id:

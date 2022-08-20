@@ -4,7 +4,7 @@ from discord_slash.utils.manage_commands import create_option
 import datetime
 import puurrtybot
 import puurrtybot.walletverifier.wallet_verify as wwv
-import puurrtybot.blockfrost.blockfrost_queries as bbq
+import puurrtybot.api.blockfrost as bbq
 import puurrtybot.users.user_updates as uuu
 
 
@@ -75,7 +75,7 @@ class WalletVerifier(commands.Cog):
 
         if ddq.get_address_by_address(address):
             await ctx.send(f"""{ctx.author.mention}, this address has been verified already: {address}""", hidden=HIDDEN_STATUS)
-        elif not bbq.check_address_exists(address):
+        elif not bbq.address_exists(address):
             await ctx.send(f"""{ctx.author.mention}, the entered address **{address}** **doesn't exist**. Please check the spelling and try again.""", hidden=HIDDEN_STATUS)
         else:
             self.verification[userid] = wwv.WalletVerify(userid = userid, address = address)

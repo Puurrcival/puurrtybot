@@ -4,7 +4,7 @@ import puurrtybot, datetime, json
 import puurrtybot.initialize.initialize as pii
 from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option, create_choice
-import puurrtybot.twitter.twitter_queries as ttq
+import puurrtybot.api.twitter as ttq
 
 SNAPSHOTS_DIR = f"""{puurrtybot.PATH}/puurrtybot/snapshots"""
 

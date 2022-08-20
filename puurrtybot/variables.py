@@ -6,6 +6,7 @@ DATABASES_DIR = f"""{PATH}/puurrtybot/databases"""
 
 
 GUILD = 998148160243384321
+TWITTER_ID = 1479912806866694149 #PuurrtyCats
 ROLES = None
 SESSION = None
 

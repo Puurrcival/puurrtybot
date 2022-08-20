@@ -1,6 +1,6 @@
 import puurrtybot, json, requests, tqdm, os
-import puurrtybot.blockfrost.blockfrost_queries as bbq
-import puurrtybot.twitter.twitter_queries as ttq
+import puurrtybot.api.blockfrost as bbq
+import puurrtybot.api.twitter as ttq
 import puurrtybot.functions as pf
 import puurrtybot.databases.database_functions as ddf
 import requests, time
@@ -86,7 +86,7 @@ def initialize_asset_sales_history_json():
 def initialize_twitter_mentions():
     puurrtybot.TWITTER_MENTIONS = {}
     try:
-        tweets = ttq.get_mentions_puurrtycats()['data']
+        tweets = ttq.get_mentions_puurrtycatsxx()['data']
         for tweet in tweets:
             puurrtybot.TWITTER_MENTIONS[tweet['id']] = tweet
     except KeyError:

@@ -72,7 +72,7 @@ class CatRumble(commands.Cog):
             text += f"""\n Cats partying on: {partyon }\n"""
 
             embed2=discord.Embed(title=f"""__Round {round}: {game_name}__""", description=text, color=0x109319)
-            await channel.send(embed=embed2)
+            #await channel.send(embed=embed2)
 
 
     @commands.Cog.listener()
