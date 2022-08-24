@@ -1,5 +1,5 @@
 import puurrtybot
-import puurrtybot.api.blockfrost as bbq
+import puurrtybot.api.blockfrost as blockfrost
 import puurrtybot.databases.database_queries as ddq
 import puurrtybot.databases.database_inserts as ddi
 
@@ -56,6 +56,6 @@ def user_update_addresses(user_id):
     stake_addresses = set([address.stake_address for address in user.addresses])
     addresses = [address.address for address in user.addresses]
     for stake_address in stake_addresses:
-        new_addresses = [address for address in bbq.get_address_list_by_stake_address(stake_address) if address not in addresses]
+        new_addresses = [address for address in blockfrost.get_address_list_by_stake_address(stake_address) if address not in addresses]
         for new_address in new_addresses:
             ddi.address_stake_address_new(new_address, stake_address, user_id)

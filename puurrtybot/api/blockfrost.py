@@ -4,12 +4,14 @@
 - 10 requests per second
 """
 
-from binascii import hexlify
-from typing import Union, List
+import binascii
+from typing import List, Optional
 
 import requests
 from requests.models import Response
-from pycardano import Address, Network
+from pycardano import Address, Network, AddressType
+from pycardano.crypto.bech32 import decode
+from pycardano.exception import InvalidAddressInputException
 
 from puurrtybot import BLOCKFROST_TOKEN
 
@@ -32,17 +34,8 @@ def query(query_string: str) -> Response:
     """Query blockfrost.io and check for valid response."""
     response = requests.get(f"""{NETWORK}{query_string}""", headers=HEADERS)
     if response.status_code != 200:
-        raise Exception( (response.status_code, f"""{BLOCKFROST_STATUS_CODES[response.status_code]}""") )
+        raise Exception( (response.status_code, BLOCKFROST_STATUS_CODES[response.status_code]) )
     return response
-
-
-def address_exists(address: str) -> bool:
-    """Check if address has a valid form."""
-    try:
-        Address.from_primitive(address)
-        return True
-    except TypeError:
-        return False
 
 
 def get_server_time() -> int:
@@ -50,15 +43,15 @@ def get_server_time() -> int:
     return int(query(f"""/health/clock""").json()['server_time']/1000)
 
 
-def get_asset_list_by_policy(policy: str,
+def get_asset_list_by_policy_id(policy_id: str,
                              order: str = 'asc',
                              max_pages: int = -1,
-                             quantity: int = 1) -> list:
-    """Get all assets of a policy."""
+                             quantity: int = 1) -> List[str]:
+    """Get assets of a policy_id."""
     page = 1
     asset_list = []
     while max_pages != page-1:
-        response = query(f"""/assets/policy/{policy}?order={order}&page={page}""")
+        response = query(f"""/assets/policy/{policy_id}?order={order}&page={page}""")
         query_result = response.json()
         if len(query_result) > 0:
             asset_list += query_result
@@ -78,19 +71,38 @@ def get_address_by_asset(asset: str) -> str:
     return query(f"""/assets/{asset}/addresses""").json()[0]['address']
 
 
-def get_stake_address_by_address(address: str) -> Union[str, None]:
-    """Get the stake_address of a Cardano address."""
+def get_address_type(address: str) -> AddressType:
     try:
-        address = Address.from_primitive(address)
-        return str(Address(staking_part=address.staking_part, network=Network.MAINNET))
+        return AddressType((bytes(decode(address))[0] & 0xF0) >> 4)
     except TypeError:
         return None
 
 
+def valid_address(address: str) -> bool:
+    """Check if address has a valid form."""
+    if address:
+        try:
+            Address.from_primitive(address)
+            return True
+        except TypeError:
+            pass
+    return False
+
+        
+def get_stake_address_by_address(address: str) -> Optional[str]:
+    """Get the stake_address of a Cardano address."""
+    if address:
+        try:
+            address = Address.from_primitive(address)
+            return str(Address(staking_part=address.staking_part, network=Network.MAINNET))
+        except (TypeError, InvalidAddressInputException):
+            pass
+    return None
+
+
 def get_address_list_by_stake_address(stake_address: str) -> List[str]:
     """Get a list of addresses belonging to a stake_address."""
-    address_list = query(f"""/accounts/{stake_address}/addresses""").json()
-    return [entry['address'] for entry in address_list]
+    return [entry['address'] for entry in query(f"""/accounts/{stake_address}/addresses""").json()]
 
 
 def get_tx_hash_list_by_address(address: str,
@@ -98,24 +110,12 @@ def get_tx_hash_list_by_address(address: str,
                                 max_pages: int = 0,
                                 past_time: int = 1*1*60*60,
                                 hash_only: bool = True) -> List[str]:
-    """Get a list of tx_hashes used by a Cardano address.
-
-    Args:
-        address (str): Cardano address.
-        order (str, optional): 'asc' for ascending order and 'desc' for descending. Defaults to 'asc'.
-        max_pages (int, optional): -1 will get all pages. Defaults to -1.
-        past_time (int, optional): The time window. Defaults to 1*1*60*60.
-        hash_only (bool, optional): If True return only the tx_hash values, else full information. Defaults to True.
-
-    Returns:
-        list: A list of tx_hashes.
-    """
+    """Get a list of tx_hashes used by a Cardano address."""
     time_window = get_server_time() - past_time
     tx_hash_list = []
     page = 1
     while max_pages != page:
-        response = query(f"""/addresses/{address}/transactions?order={order}&page={page}""")
-        query_result = response.json()
+        query_result = query(f"""/addresses/{address}/transactions?order={order}&page={page}""").json()
         if len(query_result) > 0 and query_result[0]['block_time'] > time_window:
             tx_hash_list += query_result
             page += 1
@@ -123,46 +123,24 @@ def get_tx_hash_list_by_address(address: str,
             break
     if hash_only:
         return [tx_hash['tx_hash'] for tx_hash in tx_hash_list]
-    else:
-        return [tx_hash for tx_hash in tx_hash_list]
+    return [tx_hash for tx_hash in tx_hash_list]
 
 
-def get_utxo_list_by_tx_hash(tx_hash: str) -> dict:
-    """Get a list of UTXO of a tx_hash.
-
-    Args:
-        tx_hash (str): x_hash of a Cardano transaction.
-
-    Returns:
-        dict: Inputs and Outputs of a transaction.
-    """
+def get_utxo_list_by_tx_hash(tx_hash: str) -> List[dict]:
+    """Get a list of UTXO of a tx_hash."""
     return query(f"""/txs/{tx_hash}/utxos""").json()
 
 
-def get_tx_by_tx_hash(tx_hash: str) -> str:
-    """Get transaction of a tx_hash.
-
-    Args:
-        tx_hash (str): tx_hash of a Cardano transaction.
-
-    Returns:
-        str: Cardano transaction.
-    """    
+def get_tx_by_tx_hash(tx_hash: str) -> dict:
+    """Get transaction of a tx_hash."""    
     return query(f"""/txs/{tx_hash}""").json()
 
 
-def get_address_by_adahandle(address: str) -> str:
-    """Get the Cardano address of an adahandle, see https://docs.adahandle.com/.
-
-    Args:
-        address (str): Cardano address or adahandle.
-
-    Returns:
-        str: Cardano address.
-    """
-    if not address_exists(address):
-        adahandle = address.strip('$')
-        policyID = "f0ff48bbb7bbe9d59a40f1ce90e9e9d0ff5002ec48f232b49ca0fb9a"
-        asset = f"""{policyID}{hexlify(bytes(adahandle, 'utf-8')).decode('utf-8')}"""
-        address = get_address_by_asset(asset)
-    return address
+def get_address_by_adahandle(adahandle: str) -> str:
+    """Get the Cardano address of an adahandle, see https://docs.adahandle.com/."""
+    if not valid_address(adahandle):
+        adahandle = adahandle.strip('$')
+        adahandle_policyID = "f0ff48bbb7bbe9d59a40f1ce90e9e9d0ff5002ec48f232b49ca0fb9a"
+        asset = f"""{adahandle_policyID}{binascii.hexlify(bytes(adahandle, 'utf-8')).decode('utf-8')}"""
+        adahandle = get_address_by_asset(asset)
+    return adahandle

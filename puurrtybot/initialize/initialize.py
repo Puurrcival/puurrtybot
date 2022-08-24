@@ -1,5 +1,5 @@
 import puurrtybot, json, requests, tqdm, os
-import puurrtybot.api.blockfrost as bbq
+import puurrtybot.api.blockfrost as blockfrost
 import puurrtybot.api.twitter as ttq
 import puurrtybot.functions as pf
 import puurrtybot.databases.database_functions as ddf
@@ -15,13 +15,13 @@ def delete_file(PATH):
 
 def initialize_assets_json():
     puurrtybot.ASSETS = {}
-    for asset in tqdm.tqdm(bbq.get_asset_list_by_policy(policy = puurrtybot.POLICY)):
+    for asset in tqdm.tqdm(blockfrost.get_asset_list_by_policy_id(policy_id = puurrtybot.POLICY_PCS)):
         try:
-            puurrtybot.ASSETS[asset] = bbq.get_meta_by_asset(asset)
+            puurrtybot.ASSETS[asset] = blockfrost.get_metadata_by_asset(asset)
         except requests.exceptions.ConnectionError:
             print("Connection Error, retry in 300 seconds")
             time.sleep(300)
-            puurrtybot.ASSETS[asset] = bbq.get_meta_by_asset(asset)
+            puurrtybot.ASSETS[asset] = blockfrost.get_metadata_by_asset(asset)
     ddf.save_assets()
 
 
@@ -29,11 +29,11 @@ def initialize_assets_addresses_json():
     puurrtybot.ASSETS_ADDRESSES = {}
     for asset in tqdm.tqdm(puurrtybot.ASSETS.keys()):
         try:
-            address = bbq.get_address_by_asset(asset)
+            address = blockfrost.get_address_by_asset(asset)
         except requests.exceptions.ConnectionError:
             print("Connection Error, retry in 300 seconds")
             time.sleep(300)
-            address = bbq.get_address_by_asset(asset)
+            address = blockfrost.get_address_by_asset(asset)
         try:
             puurrtybot.ASSETS_ADDRESSES[address] += [asset]
         except KeyError:
@@ -43,7 +43,7 @@ def initialize_assets_addresses_json():
 
 def initialize_market_sales_json():
     # jpgstore
-    jpgstore_sales = requests.get(f"""https://server.jpgstoreapis.com/collection/{puurrtybot.POLICY}/transactions?page=1&count=100000""").json()['transactions'][::-1]
+    jpgstore_sales = requests.get(f"""https://server.jpgstoreapis.com/collection/{puurrtybot.POLICY_PCS}/transactions?page=1&count=100000""").json()['transactions'][::-1]
     for i, sale in enumerate(jpgstore_sales):
         if sale['action'] in ['BUY','ACCEPT_OFFER']:
             timestamp = pf.time_to_timestamp(sale['confirmed_at'].split('.')[0].split('+')[0].replace('T',' '))
@@ -57,7 +57,7 @@ def initialize_market_sales_json():
 
 def initialize_market_listings_json():
     # jpgstore
-    jpgstore_listings = requests.get(f"""https://server.jpgstoreapis.com/search/tokens?policyIds=[%22{puurrtybot.POLICY}%22]&saleType=buy-now&sortBy=recently-listed&traits=%7B%7D&nameQuery=&verified=default&pagination=%7B%7D&size=10000""").json()['tokens'][::-1]
+    jpgstore_listings = requests.get(f"""https://server.jpgstoreapis.com/search/tokens?policyIds=[%22{puurrtybot.POLICY_PCS}%22]&saleType=buy-now&sortBy=recently-listed&traits=%7B%7D&nameQuery=&verified=default&pagination=%7B%7D&size=10000""").json()['tokens'][::-1]
     for i, listing in enumerate(jpgstore_listings):
         timestamp = pf.time_to_timestamp(listing['created_at'].split('.')[0].split('+')[0].replace('T',' '))
         jpgstore_listings[i] = {'listing_id': f"""{listing['listed_at']}_{listing['asset_name']}""", 'timestamp':timestamp, 'asset':listing['asset_name'], 'amount':int(listing['listing_lovelace'])/1_000_000, 'market':'jpgstore'}
@@ -115,11 +115,11 @@ def get_mint_price(amount):
 
 
 def initialize_mint_prices(mint_address = 'addr1vxk4szdzv6qxqne5k3m0wr4m5cewh2pnt23tn3tx2x28zsq7ml8dm'):
-    mint_tx_hash_list = bbq.get_tx_hash_list_by_address(mint_address, order="asc", past_time = bbq.get_server_time(), hash_only=False)
+    mint_tx_hash_list = blockfrost.get_tx_hash_list_by_address(mint_address, order="asc", past_time = blockfrost.get_server_time(), hash_only=False)
     quantity_inputs = {}
     for tx in tqdm.tqdm(mint_tx_hash_list):
         block_time = tx['block_time']
-        utxo_list = bbq.get_utxo_list_by_tx_hash(tx['tx_hash'])
+        utxo_list = blockfrost.get_utxo_list_by_tx_hash(tx['tx_hash'])
         inputs = [utxo['address'] for utxo in utxo_list['inputs']]
         outputs = [utxo['amount'][0]['quantity'] for utxo in utxo_list['outputs'] if utxo['address']==mint_address]
         if outputs:
@@ -128,9 +128,9 @@ def initialize_mint_prices(mint_address = 'addr1vxk4szdzv6qxqne5k3m0wr4m5cewh2pn
     mint_matches = {}
     for asset in tqdm.tqdm(puurrtybot.ASSETS.keys()):
         mint_tx_hash = puurrtybot.ASSETS[asset]["initial_mint_tx_hash"]
-        utxo_list = bbq.get_utxo_list_by_tx_hash(mint_tx_hash)
+        utxo_list = blockfrost.get_utxo_list_by_tx_hash(mint_tx_hash)
         mint_address = [utxo['address']  for utxo in utxo_list['outputs'] if [amount for amount in utxo['amount'] if asset == amount['unit']]][0]
-        mint_block_time = bbq.get_tx_by_tx_hash(mint_tx_hash)['block_time']
+        mint_block_time = blockfrost.get_tx_by_tx_hash(mint_tx_hash)['block_time']
         for _ , data in quantity_inputs.items():
             if data['block_time'] < mint_block_time and mint_address in data['input_addresses']:
                 try:

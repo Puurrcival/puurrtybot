@@ -66,7 +66,7 @@ class TwitterVerifier(commands.Cog):
         except KeyError:
             pass
         twitter_handle = twitter_handle.strip('@')
-        twitter_id = ttq.get_id_by_user(twitter_handle)
+        twitter_id = ttq.get_twitter_id_by_username(twitter_handle)
 
         if ddq.get_user_by_id(user_id).twitter_id:
             await ctx.send(f"""{ctx.author.mention}, {twitter_handle} already verified""", hidden=HIDDEN_STATUS)

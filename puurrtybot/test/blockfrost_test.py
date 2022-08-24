@@ -1,7 +1,7 @@
 # Testing blockfrost api
 
 import puurrtybot.api.blockfrost as blockfrost
-from puurrtybot import POLICY
+from puurrtybot import POLICY_PCS
 
 ADAHANDLE = "$puurrcival"
 ADDRESS = "addr1qyqggc5f3dgyx6ulwl4uqf8gucxvdahgpatjx27hutsusg79nee6glazchetycv3uewpraf7tfe60t3kud5l0cdkl5wqyj5xhy"
@@ -22,14 +22,14 @@ def test_get_server_time():
 
 def test_address_exists():
     # exists
-    assert blockfrost.address_exists(ADDRESS)
+    assert blockfrost.valid_address(ADDRESS)
 
     # exists not
-    assert not blockfrost.address_exists("")
+    assert not blockfrost.valid_address("")
 
 
 def test_get_asset_list_by_policy():
-    assert "f96584c4fcd13cd1702c9be683400072dd1aac853431c99037a3ab1e5a68757a69" == blockfrost.get_asset_list_by_policy(POLICY, max_pages = 1, order='desc')[0]
+    assert "f96584c4fcd13cd1702c9be683400072dd1aac853431c99037a3ab1e5a68757a69" == blockfrost.get_asset_list_by_policy_id(POLICY_PCS, max_pages = 1, order='desc')[0]
 
 
 def test_get_meta_by_asset():

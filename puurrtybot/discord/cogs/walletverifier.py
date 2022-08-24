@@ -2,9 +2,8 @@ from discord.ext import commands, tasks
 from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
 import datetime
-import puurrtybot
 import puurrtybot.walletverifier.wallet_verify as wwv
-import puurrtybot.api.blockfrost as bbq
+import puurrtybot.api.blockfrost as blockfrost
 import puurrtybot.users.user_updates as uuu
 
 
@@ -71,11 +70,11 @@ class WalletVerifier(commands.Cog):
         except KeyError:
             pass
         address = wallet.strip()
-        address = bbq.get_address_by_adahandle(address)
+        address = blockfrost.get_address_by_adahandle(address)
 
         if ddq.get_address_by_address(address):
             await ctx.send(f"""{ctx.author.mention}, this address has been verified already: {address}""", hidden=HIDDEN_STATUS)
-        elif not bbq.address_exists(address):
+        elif not blockfrost.valid_address(address):
             await ctx.send(f"""{ctx.author.mention}, the entered address **{address}** **doesn't exist**. Please check the spelling and try again.""", hidden=HIDDEN_STATUS)
         else:
             self.verification[userid] = wwv.WalletVerify(userid = userid, address = address)

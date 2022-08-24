@@ -1,6 +1,7 @@
-import puurrtybot.api.blockfrost as bbq, random
+import puurrtybot.api.blockfrost as blockfrost
+
 import puurrtybot.functions as f
-import os, puurrtybot, json
+import os, puurrtybot, json, random
 
 wallet_verify_dir = f"""{puurrtybot.PATH}/puurrtybot/databases/verify_wallet"""
 
@@ -45,8 +46,8 @@ class WalletVerify:
 
 
     def new_verify(self):
-        self.stake_address = bbq.get_stake_address_by_address(self.address)
-        self.address_list = bbq.get_address_list_by_stake_address(self.stake_address)
+        self.stake_address = blockfrost.get_stake_address_by_address(self.address)
+        self.address_list = blockfrost.get_address_list_by_stake_address(self.stake_address)
         self.amount = str(random.choice(list(range(2_000_000, 3_000_000+1))))
         self.userid = self.userid
         self.time = f.get_utc_time()
@@ -54,10 +55,10 @@ class WalletVerify:
 
         
     def verify_transaction(self):
-        self.tx_hash_list = bbq.get_tx_hash_list_by_address(self.address)
+        self.tx_hash_list = blockfrost.get_tx_hash_list_by_address(self.address)
         for tx_hash in self.tx_hash_list:
-            utxo_list = bbq.get_utxo_list_by_tx_hash(tx_hash)
-            utxo_list = bbq.get_utxo_list_by_tx_hash(tx_hash)
+            utxo_list = blockfrost.get_utxo_list_by_tx_hash(tx_hash)
+            utxo_list = blockfrost.get_utxo_list_by_tx_hash(tx_hash)
             for utxo_input in utxo_list['inputs']:
                 if utxo_input['address'] not in self.address_list:
                     return False

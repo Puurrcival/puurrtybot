@@ -50,14 +50,14 @@ class TwitterVerify:
         time_limit = 70*60
         response = ttq.get_reply_from_to(f"""{self.twitter_handle}""", """PuurrtyBot""")
         try:
-            if [data for data in response['data'] if data['author_id'] == self.twitter_id and self.amount in data['text'] and ttq.twitter_time_to_timestamp(data['created_at']) - f.get_utc_time() + time_limit > 0]:
+            if [data for data in response['data'] if data['author_id'] == self.twitter_id and self.amount in data['text'] and ttq.time_to_timestamp(data['created_at']) - f.get_utc_time() + time_limit > 0]:
                 return True
         except KeyError:
             pass
 
         response = ttq.get_conversation_by_conversation_id(verify_conversation_id)
         try:
-            if [data for data in response['data'] if data['author_id'] == self.twitter_id and self.amount in data['text'] and ttq.twitter_time_to_timestamp(data['created_at']) - f.get_utc_time() + time_limit > 0]:
+            if [data for data in response['data'] if data['author_id'] == self.twitter_id and self.amount in data['text'] and ttq.time_to_timestamp(data['created_at']) - f.get_utc_time() + time_limit > 0]:
                 return True
         except KeyError:
             pass

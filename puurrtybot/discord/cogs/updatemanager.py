@@ -1,6 +1,5 @@
-import discord
 from discord.ext import commands, tasks
-import puurrtybot.api.blockfrost as bbq
+import puurrtybot.api.blockfrost as blockfrost
 import puurrtybot.databases.database_queries as ddq
 import puurrtybot.databases.database_inserts as ddi
 import puurrtybot.functions as func
@@ -16,7 +15,7 @@ class UpdateManager(commands.Cog):
         print('UpdateManager running')
         outdated_assets = ddq.get_asset_all(func.get_utc_time()-24*60*60)
         for asset in tqdm.tqdm(outdated_assets):
-            address = bbq.get_address_by_asset(asset.asset_id)
+            address = blockfrost.get_address_by_asset(asset.asset_id)
             ddi.asset_change_address(asset.asset_id, address)
 
         if outdated_assets:

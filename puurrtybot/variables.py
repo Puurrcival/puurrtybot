@@ -2,7 +2,7 @@ from pathlib import Path
 import json, tqdm, os
 
 PATH = Path(__file__).parent.parent
-DATABASES_DIR = f"""{PATH}/puurrtybot/databases"""
+DATABASES_DIR = f"""{PATH}/puurrtybot/data"""
 
 
 GUILD = 998148160243384321

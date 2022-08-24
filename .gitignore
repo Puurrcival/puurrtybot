@@ -12,9 +12,13 @@ logs
 # Ignore Databases
 *.json
 **/snapshots
+**/data
 
 # Ignore Notebooks
 **/notebooks
+
+# Ignore Image
+**/images
 
 # Ignore local files
 **.code-workspace

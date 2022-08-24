@@ -1,10 +1,10 @@
 from discord.ext import commands
 import discord, random
 import puurrtybot, datetime, json
-import puurrtybot.initialize.initialize as pii
 from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option, create_choice
 import puurrtybot.api.twitter as ttq
+import puurrtybot.databases.database_queries as ddq
 
 SNAPSHOTS_DIR = f"""{puurrtybot.PATH}/puurrtybot/snapshots"""
 
@@ -21,12 +21,9 @@ class AdminCommands(commands.Cog):
         if ctx.channel.id == 1002510149929422858:
             self.ctx = ctx
             name = str(datetime.datetime.utcnow()).split(' ')[0]
-            await ctx.send(f"""Taking snapshot_{name}, can take approx 15 minutes.""")
-            pii.initialize_assets_addresses_json()
             snapshot = {}
-            for key, values in puurrtybot.ASSETS_ADDRESSES.items():
-                for value in values:
-                    snapshot[value] = key
+            for asset in ddq.get_all_assets():
+                snapshot[asset.asset_id] = asset.address
 
             with open(f"""{SNAPSHOTS_DIR}/snapshot_{name}.json""", 'w') as openfile:
                         json.dump(snapshot, openfile)
@@ -47,12 +44,9 @@ class AdminCommands(commands.Cog):
                       )
     async def holder_raffle(self, ctx:SlashContext, raffle_winners: int):
         if ctx.channel.id == 1002510149929422858:
-            addresses_assets = {}
-            for address, assets in puurrtybot.ASSETS_ADDRESSES.items():
-                if address not in ['addr1w999n67e86jn6xal07pzxtrmqynspgx0fwmcmpua4wc6yzsxpljz3', 'addr1zxj47sy4qxlktqzmkrw8dahe46gtv8seakrshsqz26qnvzypw288a4x0xf8pxgcntelxmyclq83s0ykeehchz2wtspksr3q9nx']:
-                    for asset in assets:
-                        addresses_assets[asset] = address
-            content = '\n'.join([addresses_assets[winner] for winner in random.sample(list(addresses_assets.keys()), int(raffle_winners))])
+            await ctx.send(f"""{ctx.author.mention} used /holder_raffle {raffle_winners}\nLooking for winner(s)...""" )
+            assets = [asset for asset in ddq.get_all_assets() if asset.address not in ['addr1w999n67e86jn6xal07pzxtrmqynspgx0fwmcmpua4wc6yzsxpljz3', 'addr1zxj47sy4qxlktqzmkrw8dahe46gtv8seakrshsqz26qnvzypw288a4x0xf8pxgcntelxmyclq83s0ykeehchz2wtspksr3q9nx']]
+            content = '\n'.join([winner.address for winner in random.sample(assets, int(raffle_winners))])
             await self.client.get_channel(1002510149929422858).send(content)
 
 

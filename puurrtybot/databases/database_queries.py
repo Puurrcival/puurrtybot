@@ -1,4 +1,4 @@
-from puurrtybot.databases.database_initialize import Listing, Session, User, Address, Asset, Sale, Tweet
+from puurrtybot.database.create import Listing, Session, User, Address, Asset, Sale, Tweet
 from sqlalchemy import or_
 import puurrtybot
 
@@ -14,7 +14,11 @@ def get_asset_by_id(asset_id):
     return Session.query(Asset).filter(Asset.asset_id == asset_id).first()
 
 
-def get_asset_all(timestamp = 999_999_999):
+def get_all_assets():
+    return Session.query(Asset).all()
+
+
+def get_asset_all(timestamp = 999_999_999_999):
     return Session.query(Asset).filter(Asset.updated_on < timestamp).all()
 
 

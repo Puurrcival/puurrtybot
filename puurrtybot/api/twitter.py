@@ -2,14 +2,16 @@
 
 import datetime
 import random
+from typing import List
 
 import requests
 from requests.models import Response
 
-import puurrtybot
+from puurrtybot import TWITTER_BEARER_TOKEN
+from puurrtybot.database.create import Tweet
 import puurrtybot.databases.database_queries as ddq
-import puurrtybot.databases.database_inserts as ddi
-HEADERS = {"Authorization": "Bearer {}".format(puurrtybot.TWITTER_BEARER_TOKEN)}
+
+HEADERS = {"Authorization": "Bearer {}".format(TWITTER_BEARER_TOKEN)}
 NETWORK = 'https://api.twitter.com/2'
 
 
@@ -31,28 +33,29 @@ TWITTER_STATUS_CODES = {
 
 
 def query(query_string: str) -> Response:
+    """Query twitter api and check for valid response."""
     response = requests.get(f"""{NETWORK}{query_string}""", headers=HEADERS)
     if response.status_code != 200:
         raise Exception( (response.status_code, f"""{TWITTER_STATUS_CODES[response.status_code]}""") )
     return response
 
 
-def twitter_time_to_timestamp(timeformat) -> int:
+def time_to_timestamp(timeformat) -> int:
     return int(datetime.datetime.strptime(timeformat.split('.')[0].replace('T', ' '),"%Y-%m-%d %H:%M:%S").replace(tzinfo=datetime.timezone.utc).timestamp())
 
 
-def get_id_by_user(name: str) -> int:
+def get_twitter_id_by_username(name: str) -> int:
     try:
         return int(query(f"""/users/by/username/{name.strip('@')}""").json()['data']['id'])
     except KeyError:
-        return False
+        return None
 
 
-def get_user_by_id(twitter_id: int) -> str:
+def get_username_by_twitter_id(twitter_id: int) -> str:
     try:
         return query(f"""/users/{twitter_id}""").json()['data']['username'].lower()
     except KeyError:
-        return False
+        return None
 
 
 def get_conversation_id_by_tweet_id(tweet_id: int) -> int:
@@ -67,28 +70,51 @@ def get_reply_from_to(from_user, to_user) -> dict:
     return query(f"""/tweets/search/recent?query=from:{from_user.strip('@')} to:{to_user.strip('@')}&tweet.fields=author_id,created_at""").json()
 
 
-def get_mentions_by_twitter_id(twitter_id: int, next_token: str ="") -> dict:
-    return query(f"""/users/{twitter_id}/mentions?{next_token}tweet.fields=in_reply_to_user_id,author_id""").json()
 
-
-def store_untracked_mentions_by_tweet_id(twitter_id: int, max_count: int = -1) -> None:
+def get_mentions_by_twitter_id(twitter_id: int, max_count: int = -1) -> None:
+    Tweets = []
     next_token=""
     while max_count != 0:
         max_count += -1
-        response = get_mentions_by_twitter_id(twitter_id, next_token)
+        response = query(f"""/users/{twitter_id}/mentions?{next_token}tweet.fields=in_reply_to_user_id,author_id,created_at""").json()
         try:
             for entity in response['data']:
-                in_reply_to_user_id = entity.get('in_reply_to_user_id', None)
-                tweet_id , author_id = int(entity['id']), int(entity['author_id'])
-                if not ddq.get_tweet_by_id(tweet_id):
-                    ddi.tweet_new(tweet_id, author_id, in_reply_to_user_id = in_reply_to_user_id, tracked = False)
-                else:
-                    max_count = 0
-                    break          
+                Tweets.append( Tweet(   int(entity.get('id')), 
+                                        time_to_timestamp(entity.get('created_at')),
+                                        int(entity.get('author_id')), 
+                                        int(entity.get('in_reply_to_user_id')) if entity.get('in_reply_to_user_id') else None,
+                                        True)
+                                        )
             next_token = response['meta']['next_token']
             next_token = f"""pagination_token={next_token}&"""
         except KeyError:
             break 
+    return Tweets
+
+
+def get_untracked_mentions_by_twitter_id(twitter_id: int, max_count: int = -1) -> List[Tweet]:
+    Tweets = []
+    next_token=""
+    while max_count != 0:
+        max_count += -1
+        response = query(f"""/users/{twitter_id}/mentions?{next_token}tweet.fields=in_reply_to_user_id,author_id,created_at""").json()
+        try:
+            for entity in response['data']:
+                if not ddq.get_tweet_by_id(int(entity.get('id'))):
+                    Tweets.append( Tweet(   int(entity.get('id')), 
+                                            time_to_timestamp(entity.get('created_at')),
+                                            int(entity.get('author_id')), 
+                                            int(entity.get('in_reply_to_user_id')) if entity.get('in_reply_to_user_id') else None,
+                                            True)
+                                            )
+                else:
+                    max_count = 0
+                    break
+            next_token = response['meta']['next_token']
+            next_token = f"""pagination_token={next_token}&"""
+        except KeyError:
+            break 
+    return Tweets
 
 
 def get_twitter_id_list_by_retweet(tweet_id, max_count = -1):
@@ -146,4 +172,4 @@ def twitter_raffle(tweet_id, raffle = 1, minimum_mention = 3, tweet_retweet = Tr
         likes = get_twitter_id_list_by_liking(tweet_id)
         eligible = set(eligible).intersection(likes)
     eligible = list(set(eligible))
-    return [get_user_by_id(twitter_id) for twitter_id in random.sample(eligible, raffle)]
+    return [get_username_by_twitter_id(twitter_id) for twitter_id in random.sample(eligible, raffle)]

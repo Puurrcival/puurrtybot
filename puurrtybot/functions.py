@@ -4,6 +4,9 @@ import multiprocessing, pickle, random, datetime, pickle, pandas as pd, numpy as
 from PIL import Image
 import puurrtybot, puurrtybot.assets.get_functions as agf
 
+def flatten_list(nested_list):
+    return [element for sublist in nested_list for element in sublist]
+
 
 def ordinal(n: int) -> str:
     return f"{n:d}{'tsnrhtdd'[(n//10%10!=1)*(n%10<4)*n%10::4]}"

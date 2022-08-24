@@ -1,6 +1,6 @@
-from puurrtybot.databases.database_initialize import Address, Asset, User, Sale, Listing, Tweet, Session
+from puurrtybot.database.create import Address, Asset, User, Sale, Listing, Tweet, Session
 import puurrtybot.databases.database_queries as ddq
-import puurrtybot.api.blockfrost as bbq
+import puurrtybot.api.blockfrost as blockfrost
 import puurrtybot.functions as func
 
 
@@ -10,7 +10,15 @@ def user_change_balance(user_id, amount):
 
 
 def asset_change_address(asset_id, address):
-    Session.query(Asset).filter(Asset.asset_id == asset_id).update({'address': address, 'updated_on':func.get_utc_time()})
+    address_type = blockfrost.get_address_type(address)
+    stake_address = blockfrost.get_stake_address_by_address(address)
+    stake_address_type = blockfrost.get_address_type(stake_address)
+    Session.query(Asset).filter(Asset.asset_id == asset_id).update(
+        {'address': address,
+         'address_type': address_type.name if address_type else None,
+         'stake_address': stake_address,
+         'stake_address_type': stake_address_type.name if stake_address_type else None,
+         'updated_on':func.get_utc_time()})
     Session.commit()
 
 
@@ -31,7 +39,7 @@ def address_stake_address_new(address, stake_address, user_id):
 
 
 def address_new(address, user_id):
-    stake_address = bbq.get_stake_address_by_address(address)
+    stake_address = blockfrost.get_stake_address_by_address(address)
     Session.add(Address(address = address, stake_address = stake_address, user_id = user_id))
     Session.commit()
 
