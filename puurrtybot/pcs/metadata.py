@@ -3,8 +3,8 @@
 from enum import Enum
 
 class Trait(Enum):
-    def query(self):
-        return (self.__class__.__name__.lower(), self.value)
+    def class_name(self):
+        return self.__class__.__name__.lower()
 
 
 class Background(Trait):
@@ -179,6 +179,7 @@ class Prefix_name(Trait):
     
 
 class First_name(Trait):
+    NONE = None
     ABBY = 'Abby'
     ADA = 'Ada'
     ADAM = 'Adam'
@@ -361,6 +362,7 @@ class First_name(Trait):
 
 
 class Last_name(Trait):
+    NONE = None
     ABAWI = 'Abawi'
     ADAMS = 'Adams'
     ALVAREZ = 'Alvarez'

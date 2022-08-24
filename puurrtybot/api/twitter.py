@@ -44,6 +44,14 @@ def time_to_timestamp(timeformat) -> int:
     return int(datetime.datetime.strptime(timeformat.split('.')[0].replace('T', ' '),"%Y-%m-%d %H:%M:%S").replace(tzinfo=datetime.timezone.utc).timestamp())
 
 
+def map_tweet(tweet):
+    return Tweet(   int(tweet.get('id')), 
+                    time_to_timestamp(tweet.get('created_at')),
+                    int(tweet.get('author_id')), 
+                    int(tweet.get('in_reply_to_user_id')) if tweet.get('in_reply_to_user_id') else None,
+                    True)
+
+
 def get_twitter_id_by_username(name: str) -> int:
     try:
         return int(query(f"""/users/by/username/{name.strip('@')}""").json()['data']['id'])
@@ -70,6 +78,9 @@ def get_reply_from_to(from_user, to_user) -> dict:
     return query(f"""/tweets/search/recent?query=from:{from_user.strip('@')} to:{to_user.strip('@')}&tweet.fields=author_id,created_at""").json()
 
 
+def get_mentions_by_twitter_id_last(twitter_id: int):
+    return map_tweet(query(f"""/users/{twitter_id}/mentions?max_results=50&tweet.fields=in_reply_to_user_id,author_id,created_at""").json()['data'][0])
+
 
 def get_mentions_by_twitter_id(twitter_id: int, max_count: int = -1) -> None:
     Tweets = []
@@ -79,12 +90,7 @@ def get_mentions_by_twitter_id(twitter_id: int, max_count: int = -1) -> None:
         response = query(f"""/users/{twitter_id}/mentions?{next_token}tweet.fields=in_reply_to_user_id,author_id,created_at""").json()
         try:
             for entity in response['data']:
-                Tweets.append( Tweet(   int(entity.get('id')), 
-                                        time_to_timestamp(entity.get('created_at')),
-                                        int(entity.get('author_id')), 
-                                        int(entity.get('in_reply_to_user_id')) if entity.get('in_reply_to_user_id') else None,
-                                        True)
-                                        )
+                Tweets.append(map_tweet(entity))
             next_token = response['meta']['next_token']
             next_token = f"""pagination_token={next_token}&"""
         except KeyError:
@@ -99,14 +105,9 @@ def get_untracked_mentions_by_twitter_id(twitter_id: int, max_count: int = -1) -
         max_count += -1
         response = query(f"""/users/{twitter_id}/mentions?{next_token}tweet.fields=in_reply_to_user_id,author_id,created_at""").json()
         try:
-            for entity in response['data']:
-                if not ddq.get_tweet_by_id(int(entity.get('id'))):
-                    Tweets.append( Tweet(   int(entity.get('id')), 
-                                            time_to_timestamp(entity.get('created_at')),
-                                            int(entity.get('author_id')), 
-                                            int(entity.get('in_reply_to_user_id')) if entity.get('in_reply_to_user_id') else None,
-                                            True)
-                                            )
+            for tweet in response['data']:
+                if not ddq.get_tweet_by_id(int(tweet.get('id'))):
+                    Tweets.append(map_tweet(tweet))
                 else:
                     max_count = 0
                     break

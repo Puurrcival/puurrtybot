@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List, Optional
 
-from puurrtybot.database.asset import Asset
+from puurrtybot.pcs.asset import Asset
 
 @dataclass
 class Address:

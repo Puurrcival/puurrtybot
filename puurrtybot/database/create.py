@@ -1,10 +1,13 @@
 """A module to create the sqlite .db"""
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Table, create_engine
+from pycardano import AddressType
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Table, create_engine, Enum
 from sqlalchemy.orm import relationship, sessionmaker, registry
 
-from puurrtybot.database import address, asset, listing, sale, tweet, user
+from puurrtybot.pcs import metadata
+from puurrtybot.database import address, listing, sale, tweet, user
+from puurrtybot.pcs import asset, role
 from puurrtybot import DATABASES_DIR
 
 
@@ -42,31 +45,31 @@ class Asset(asset.Asset):
         mapper_registry.metadata,
         Column('asset_id', String(127), primary_key=True),
         Column('address', String(255), ForeignKey('addresses.address')),
-        Column('address_type', String(63)),
+        Column('address_type', Enum(AddressType)),
         Column('stake_address', String(255)),
-        Column('stake_address_type', String(63)),
+        Column('stake_address_type', Enum(AddressType)),
         Column('policy_id', String(255)),
         Column('asset_fingerprint', String(63)),
         Column('initial_mint_tx_hash', String(63)),
         Column('quantity', Integer()),
         Column('asset_name', String(63)),          
         Column('name', String(63)),
-        Column('prefix_name', String(63)),
-        Column('first_name', String(63)),
-        Column('last_name', String(63)),
-        Column('suffix_name', String(63)),
-        Column('img_url', String(63)),
-        Column('unique', String(31)),                      
-        Column('fur', String(31)), 
-        Column('hat', String(31)), 
-        Column('eyes', String(31)), 
-        Column('mask', String(31)), 
-        Column('tail', String(31)), 
-        Column('hands', String(31)), 
-        Column('mouth', String(31)), 
-        Column('wings', String(31)), 
-        Column('outfit', String(31)), 
-        Column('background', String(31)), 
+        Column('prefix_name', Enum(metadata.Prefix_name)),
+        Column('first_name', Enum(metadata.First_name)),
+        Column('last_name', Enum(metadata.Last_name)),
+        Column('suffix_name', Enum(metadata.Suffix_name)),
+        Column('img_url', String(255)),
+        Column('unique', Enum(metadata.Unique)),                      
+        Column('fur', Enum(metadata.Fur)), 
+        Column('hat', Enum(metadata.Hat)), 
+        Column('eyes', Enum(metadata.Eyes)), 
+        Column('mask', Enum(metadata.Mask)), 
+        Column('tail', Enum(metadata.Tail)), 
+        Column('hands', Enum(metadata.Hands)), 
+        Column('mouth', Enum(metadata.Mouth)), 
+        Column('wings', Enum(metadata.Wings)), 
+        Column('outfit', Enum(metadata.Outfit)), 
+        Column('background', Enum(metadata.Background)),
         Column('collection', String(31)), 
         Column('mint_price', Integer()),
         Column('mint_time', Integer()),
@@ -78,7 +81,7 @@ class Asset(asset.Asset):
             "sales": relationship("Sale"),
         }
     }
-        
+
 
 @mapper_registry.mapped
 class Address(address.Address):
@@ -96,7 +99,47 @@ class Address(address.Address):
         }
     }
     
-    
+
+@mapper_registry.mapped
+class Listing(listing.Listing):
+    __table__ = Table(
+        "listings",
+        mapper_registry.metadata,
+        Column('listing_id', String(255), primary_key=True),
+        Column('asset_id', String(255), ForeignKey('assets.asset_id')),
+        Column('created_at', Integer()),
+        Column('amount_lovelace', Integer()),
+        Column('market', String(255)),
+        Column('tracked', Boolean(), default=False),
+    )
+
+
+@mapper_registry.mapped
+class Tweet(tweet.Tweet):
+    __table__ = Table(
+        "tweets",
+        mapper_registry.metadata,
+        Column('tweet_id', Integer(), primary_key=True),
+        Column('created_at', Integer()),
+        Column('author_id', Integer(), ForeignKey('users.twitter_id')),
+        Column('in_reply_to_user_id', Integer()),
+        Column('tracked', Boolean(), default=False),
+    )
+
+
+@mapper_registry.mapped
+class Role(role.Role):
+    __table__ = Table(
+        "roles",
+        mapper_registry.metadata,
+        Column('ix', String(255), primary_key=True),
+        Column('role_id', Integer()),
+        Column('user_id', String(255), ForeignKey('users.user_id')),
+        Column('requirement', Boolean(), default=False),
+        Column('updated_on', Integer(), default=int(datetime.utcnow().timestamp()), onupdate=int(datetime.utcnow().timestamp()))
+    )
+
+
 @mapper_registry.mapped
 class User(user.User):
     __table__ = Table(
@@ -113,36 +156,21 @@ class User(user.User):
     __mapper_args__ = {
         "properties": {
             "addresses": relationship("Address"),
+            "roles": relationship("Role"),
+            "tweets": relationship("Tweet"),
         }
     }
-    
-
-@mapper_registry.mapped
-class Listing(listing.Listing):
-    __table__ = Table(
-        "listings",
-        mapper_registry.metadata,
-        Column('listing_id', String(255), primary_key=True),
-        Column('asset_id', String(255), ForeignKey('assets.asset_id')),
-        Column('listed_at', Integer()),
-        Column('amount_lovelace', Integer()),
-        Column('market', String(255)),
-        Column('tracked', Boolean(), default=False),
-    )
-
-
-@mapper_registry.mapped
-class Tweet(tweet.Tweet):
-    __table__ = Table(
-        "tweets",
-        mapper_registry.metadata,
-        Column('tweet_id', Integer(), primary_key=True),
-        Column('created_at', Integer()),
-        Column('author_id', Integer()),
-        Column('in_reply_to_user_id', Integer()),
-        Column('tracked', Boolean(), default=False),
-    )
-
 
 Base.metadata.create_all(engine)
-Session = Session(bind=engine)
+
+SESSION = Session(bind=engine)
+
+
+def sql_commit_list(function):
+    def wrapper(*arg, **kwargs):
+        sql_list = function(*arg, **kwargs)
+        with Session(bind=engine) as session:
+            for datapoint in sql_list:
+                session.add(datapoint)
+            session.commit()
+    return wrapper
