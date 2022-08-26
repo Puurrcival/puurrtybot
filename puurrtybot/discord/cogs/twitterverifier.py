@@ -1,15 +1,43 @@
+import random, datetime
+
 from discord.ext import commands, tasks
 from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
-import datetime, puurrtybot
-import puurrtybot.api.twitter as ttq
-import puurrtybot.twitterverifier.twitter_verify as tvt
 
-
+import puurrtybot.database.update as du
 import puurrtybot.database.query as dq
-import puurrtybot.database.insert as di
+import puurrtybot.helper.functions as hf
+import puurrtybot.api.twitter as twitter
 
 HIDDEN_STATUS = True
+VERIFY_TWEET_ID = '1549207713594343425'
+VERIFY_CONVERSATION_ID = twitter.get_conversation_id_by_tweet_id(VERIFY_TWEET_ID)
+
+
+class TwitterVerify:
+    def __init__(self, user_id: int, twitter_handle: str, twitter_id: str):
+        self.user_id = user_id
+        self.twitter_handle = twitter_handle
+        self.twitter_id = twitter_id
+        self.amount = str(random.choice(list(range(1_000_000, 9_000_000+1))))
+        self.time = hf.get_utc_time()
+        
+    def verify_twitter(self):
+        time_limit = 70*60
+        response = twitter.get_reply_from_to(f"""{self.twitter_handle}""", """PuurrtyBot""")
+        try:
+            if [data for data in response['data'] if data['author_id'] == self.twitter_id and self.amount in data['text'] and twitter.time_to_timestamp(data['created_at']) - hf.get_utc_time() + time_limit > 0]:
+                return True
+        except KeyError:
+            pass
+
+        response = twitter.get_conversation_by_conversation_id(VERIFY_CONVERSATION_ID)
+        try:
+            if [data for data in response['data'] if data['author_id'] == self.twitter_id and self.amount in data['text'] and twitter.time_to_timestamp(data['created_at']) - hf.get_utc_time() + time_limit > 0]:
+                return True
+        except KeyError:
+            pass
+        return False
 
 
 class TwitterVerifier(commands.Cog):
@@ -21,7 +49,6 @@ class TwitterVerifier(commands.Cog):
         self.ctx_id = {}
         self.verification = {}
 
-
     async def static_loop(self, user_id, count):
         print('verify started')
         ctx = self.ctx_id[user_id]
@@ -30,7 +57,7 @@ class TwitterVerifier(commands.Cog):
         twitter_handle = self.verification[user_id].twitter_handle
         if check:
             await ctx.send(f"""<@{user_id}>, reply found, your twitter account is now verified: {twitter_handle}""", hidden=HIDDEN_STATUS)
-            di.user_change_twitter(user_id, self.verification[user_id].twitter_id, self.verification[user_id].twitter_handle)
+            du.update_twitter_by_user_id(user_id, self.verification[user_id].twitter_id, self.verification[user_id].twitter_handle)
             self._tasks[user_id].cancel()
         elif self.counter[user_id] > count:
             await ctx.send(f"""<@{user_id}>, verifying time exceeded.""", hidden=HIDDEN_STATUS)
@@ -39,14 +66,12 @@ class TwitterVerifier(commands.Cog):
             print(f"""not verified {user_id} {twitter_handle}""")
             await ctx.send(f"""... still looking for reply. \n Next check for reply <t:{int(datetime.datetime.now().timestamp())+60*5}:R>.""", hidden=HIDDEN_STATUS)
             self.ctx_id[user_id] = ctx
-            
 
     def task_launcher(self, user_id, seconds, count):
         new_task = tasks.loop(seconds = seconds, count = count)(self.static_loop)
         new_task.start(user_id, count)
         self._tasks[user_id] = new_task
         self.counter[user_id] = 1
-        
 
     @cog_ext.cog_slash(
         name = "verify_twitter",
@@ -66,14 +91,14 @@ class TwitterVerifier(commands.Cog):
         except KeyError:
             pass
         twitter_handle = twitter_handle.strip('@')
-        twitter_id = ttq.get_twitter_id_by_username(twitter_handle)
+        twitter_id = twitter.get_twitter_id_by_username(twitter_handle)
 
         if dq.get_user_by_user_id(user_id).twitter_id:
             await ctx.send(f"""{ctx.author.mention}, {twitter_handle} already verified""", hidden=HIDDEN_STATUS)
         elif not twitter_id:
              await ctx.send(f"""{ctx.author.mention}, the entered twitter name **{twitter_handle}** **doesn't exist**. Please check the spelling and try again.""", hidden=HIDDEN_STATUS)        
         else:
-            self.verification[user_id] = tvt.TwitterVerify(user_id = user_id, twitter_handle = twitter_handle, twitter_id = twitter_id)
+            self.verification[user_id] = TwitterVerify(user_id = user_id, twitter_handle = twitter_handle, twitter_id = twitter_id)
             await ctx.send(f"""**Verify a new twitter account** \n\n⌛ Please reply with **{self.verification[user_id].amount}** to https://twitter.com/PuurrtyBot/status/1549207713594343425 from **{twitter_handle}** within the next 60 minutes.""", hidden=HIDDEN_STATUS)
             self.ctx_id[user_id] = ctx
             self.task_launcher(user_id, seconds=60*5, count=12)

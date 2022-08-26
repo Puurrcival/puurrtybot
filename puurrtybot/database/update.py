@@ -1,6 +1,7 @@
 import tqdm
-import puurrtybot.database.query as dq
+
 import puurrtybot.api.blockfrost as blockfrost
+import puurrtybot.database.query as dq
 import puurrtybot.database.insert as di
 
 from puurrtybot.database.create import sql_update, User, Asset

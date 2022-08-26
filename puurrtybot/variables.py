@@ -8,7 +8,7 @@ IMAGES_DIR = f"""{PATH}/puurrtybot/data/images_small"""
 
 GUILD = 998148160243384321
 TWITTER_ID = 1479912806866694149 #PuurrtyCats
-ROLES = None
+DISCORD_ROLES = None
 SESSION = None
 
 

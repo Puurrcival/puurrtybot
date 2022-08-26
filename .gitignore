@@ -9,16 +9,12 @@ logs
 # Ignore the credentials directory
 **/credentials
 
-# Ignore Databases
-*.json
-**/snapshots
+# Ignore Data
 **/data
+**/htmlcov
 
 # Ignore Notebooks
 **/notebooks
 
-# Ignore Image
-**/images
-
 # Ignore local files
-**.code-workspace
+.**

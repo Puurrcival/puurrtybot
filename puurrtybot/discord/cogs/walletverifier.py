@@ -1,16 +1,39 @@
+import random, datetime
+
 from discord.ext import commands, tasks
 from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
-import datetime
-import puurrtybot.walletverifier.wallet_verify as wwv
+
+import puurrtybot.helper.functions as hf
 import puurrtybot.api.blockfrost as blockfrost
-import puurrtybot.users.user_updates as uuu
-
-
 import puurrtybot.database.query as dq
 import puurrtybot.database.insert as di
+from puurrtybot.discord.cogs.updatemanager import update_role_all_by_user
 
 HIDDEN_STATUS = True
+
+
+class WalletVerify:
+    def __init__(self, userid: int, address: str = None):
+        self.address = address
+        self.userid = userid
+        self.stake_address = blockfrost.get_stake_address_by_address(self.address)
+        self.address_list = blockfrost.get_address_list_by_stake_address(self.stake_address)
+        self.amount = str(random.choice(list(range(2_000_000, 3_000_000+1))))
+        self.time = hf.get_utc_time()
+
+    def verify_transaction(self):
+        self.tx_hash_list = blockfrost.get_tx_hash_list_by_address(self.address)
+        for tx_hash in self.tx_hash_list:
+            utxo_list = blockfrost.get_utxo_list_by_tx_hash(tx_hash)
+            utxo_list = blockfrost.get_utxo_list_by_tx_hash(tx_hash)
+            for utxo_input in utxo_list['inputs']:
+                if utxo_input['address'] not in self.address_list:
+                    return False
+            for utxo_output in utxo_list['outputs']:
+                if utxo_output['address'] == self.address and self.amount in [entry['quantity'] for entry in utxo_output['amount']]:
+                    return True
+        return False
 
 
 class WalletVerifier(commands.Cog):
@@ -30,8 +53,7 @@ class WalletVerifier(commands.Cog):
             print(f"""verified {userid} {wallet}""")
             await ctx.send(f"""<@{userid}>, transaction found, your address is now verified: {wallet}""", hidden=HIDDEN_STATUS)
             di.new_address(address = wallet, user_id = userid)
-            await uuu.user_update_role_number_of_cats(userid)
-            await uuu.user_update_roles_all(userid)
+            await update_role_all_by_user(dq.get_user_by_user_id(userid))
             self._tasks[userid].cancel()
         else:
             print(f"""not verified {userid} {wallet}""")
@@ -43,14 +65,12 @@ class WalletVerifier(commands.Cog):
             await ctx.send(f"""<@{userid}>, verifying time exceeded.""", hidden=HIDDEN_STATUS)
             print('time exceeded')
 
-
     def task_launcher(self, userid, seconds, count):
         new_task = tasks.loop(seconds = seconds, count = count)(self.static_loop)
         new_task.start(userid, count)
         self._tasks[userid] = new_task
         self.counter[userid] = 1
         
-
     @cog_ext.cog_slash(
         name = "verify_wallet",
         description = "verify_wallet",
@@ -77,7 +97,7 @@ class WalletVerifier(commands.Cog):
         elif not blockfrost.valid_address(address):
             await ctx.send(f"""{ctx.author.mention}, the entered address **{address}** **doesn't exist**. Please check the spelling and try again.""", hidden=HIDDEN_STATUS)
         else:
-            self.verification[userid] = wwv.WalletVerify(userid = userid, address = address)
+            self.verification[userid] = WalletVerify(userid = userid, address = address)
             self.ctx_id[userid] = ctx
 
             amount = str(self.verification[userid].amount)

@@ -1,7 +1,7 @@
 import datetime
 
 from discord.ext import commands, tasks
-import puurrtybot.twitter.twitter_functions as ttf
+import puurrtybot.api.tweepy as tweepy
 import puurrtybot.database.query as dq
 from puurrtybot.api import jpgstore
 from puurrtybot.pcs import POLICY_ID
@@ -61,7 +61,7 @@ class SaleTracker(commands.Cog):
                 content_detail = f"""{bought_string}{hodl_string}\n{profit}\n"""
 
                 content=f"""🐱 {ap.asset_name} just sold for {sold}₳!{content_detail}"""
-                tweet_id = ttf.tweet_sale(content, sale.asset_id)
+                tweet_id = tweepy.tweet_sale(content, sale.asset_id)
                 await self.channel.send(f"""https://twitter.com/PuurrtyBot/status/{tweet_id}""")
                 insert_object(sale)
                 print("sent sale tweet")

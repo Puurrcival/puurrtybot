@@ -3,10 +3,10 @@ import discord, random
 import puurrtybot, datetime, json
 from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option, create_choice
-import puurrtybot.api.twitter as ttq
+import puurrtybot.api.twitter as twitter
 import puurrtybot.database.query as dq
 
-SNAPSHOTS_DIR = f"""{puurrtybot.PATH}/puurrtybot/snapshots"""
+SNAPSHOTS_DIR = f"""{puurrtybot.PATH}/puurrtybot/data/snapshots"""
 
 
 class AdminCommands(commands.Cog):
@@ -95,7 +95,7 @@ class AdminCommands(commands.Cog):
                 tweet_retweet = True
             else:
                 tweet_retweet = False
-            winners = ttq.twitter_raffle(tweet_id = tweet_id, raffle = int(raffle_winners), minimum_mention = int(tweet_mentions), tweet_retweet = tweet_retweet, tweet_like = tweet_like)
+            winners = twitter.twitter_raffle(tweet_id = tweet_id, raffle = int(raffle_winners), minimum_mention = int(tweet_mentions), tweet_retweet = tweet_retweet, tweet_like = tweet_like)
             winners = [f"""https://twitter.com/{winner}""" for winner in winners]
             content = '\n'.join(winners)
             await self.client.get_channel(1002510149929422858).send(content)

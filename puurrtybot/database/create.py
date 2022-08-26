@@ -5,9 +5,8 @@ from pycardano import AddressType
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Table, create_engine, Enum
 from sqlalchemy.orm import relationship, sessionmaker, registry
 
+import puurrtybot.database.table as table
 from puurrtybot.pcs import metadata
-from puurrtybot.database import address, listing, sale, tweet, user
-from puurrtybot.pcs import asset, role
 from puurrtybot import DATABASES_DIR
 
 
@@ -21,7 +20,7 @@ Session = sessionmaker()
          
 
 @mapper_registry.mapped
-class Sale(sale.Sale):
+class Sale(table.Sale):
     __table__ = Table(
         "sales",
         mapper_registry.metadata,
@@ -39,7 +38,7 @@ class Sale(sale.Sale):
 
 
 @mapper_registry.mapped
-class Asset(asset.Asset):
+class Asset(table.Asset):
     __table__ = Table(
         "assets",
         mapper_registry.metadata,
@@ -84,7 +83,7 @@ class Asset(asset.Asset):
 
 
 @mapper_registry.mapped
-class Address(address.Address):
+class Address(table.Address):
     __table__ = Table(
         "addresses",
         mapper_registry.metadata,
@@ -101,7 +100,7 @@ class Address(address.Address):
     
 
 @mapper_registry.mapped
-class Listing(listing.Listing):
+class Listing(table.Listing):
     __table__ = Table(
         "listings",
         mapper_registry.metadata,
@@ -115,7 +114,7 @@ class Listing(listing.Listing):
 
 
 @mapper_registry.mapped
-class Tweet(tweet.Tweet):
+class Tweet(table.Tweet):
     __table__ = Table(
         "tweets",
         mapper_registry.metadata,
@@ -128,7 +127,7 @@ class Tweet(tweet.Tweet):
 
 
 @mapper_registry.mapped
-class Role(role.Role):
+class Role(table.Role):
     __table__ = Table(
         "roles",
         mapper_registry.metadata,
@@ -141,7 +140,7 @@ class Role(role.Role):
 
 
 @mapper_registry.mapped
-class User(user.User):
+class User(table.User):
     __table__ = Table(
         "users",
         mapper_registry.metadata,

@@ -1,11 +1,13 @@
-import tqdm, puurrtybot
+import tqdm
+
+import puurrtybot
 from puurrtybot.pcs.config import POLICY_ID
 from puurrtybot.pcs.metadata import Name
 from puurrtybot.database.create import Asset, Role, session, sql_add
 from puurrtybot.api import blockfrost, jpgstore, twitter
 from puurrtybot.pcs import TWITTER_ID
 from puurrtybot.database import query as dq
-from puurrtybot.pcs import role
+import puurrtybot.database.table as table
 from puurrtybot.database import temp
 
 
@@ -86,7 +88,7 @@ def initialize_addresses():
 def initialize_roles():
     roles = []
     for user in temp.get_init_users():
-        for role_id, role_object in role.ID_2_ROLE.items():
+        for role_id, role_object in table.ID_2_ROLE.items():
             value = dq.qualify_role(role_object, user.user_id)
             value = True if value > 0 else False
             roles.append(Role(role_id=role_id, requirement=value, user_id= user.user_id))

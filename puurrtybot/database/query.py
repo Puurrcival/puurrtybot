@@ -1,10 +1,10 @@
-from typing import List, Tuple, Union
+from typing import List, Union
 
 from sqlalchemy import or_, and_
 
 from puurrtybot.database.create import Listing, User, Address, Asset, Role, Sale, Tweet, sql_query
 from puurrtybot.pcs.metadata import Trait
-from puurrtybot import pcs
+from puurrtybot.pcs.role import AssetRole, Amount
 
 
 """User queries."""
@@ -39,6 +39,11 @@ def get_address_by_address(address: str, session=None) -> Address:
     return session.query(Address).filter(Address.address == address).first()
 
 
+@sql_query
+def get_address_by_user_id(user_id: int, session=None) -> List[Address]:
+    return session.query(Address).filter(Address.user_id == user_id)
+
+
 """Asset queries."""
 @sql_query
 def get_asset_by_asset_id(asset_id: str, session=None) -> Asset:
@@ -60,7 +65,7 @@ def get_asset_all_by_user_id(user_id: int, count: bool = True, session=None) -> 
 
 
 @sql_query
-def get_asset_all_by_role(role: pcs.role.AssetRole, user_id: int = None, count: bool = True, session=None) -> Union[int, List[Asset]]:
+def get_asset_all_by_role(role: AssetRole, user_id: int = None, count: bool = True, session=None) -> Union[int, List[Asset]]:
     """Get count or data of all assetes matching a role, optional of an user by user_id."""
     session = session.query(Asset).filter(or_(getattr(Asset, trait.class_name)==trait for trait in role.requirement))
     if user_id:
@@ -109,9 +114,9 @@ def get_listings(tracked: bool = True, session=None) -> List[Listing]:
 
  
 """Role queries."""
-def qualify_role(role_object: pcs.role.AssetRole, user_id: int) -> int:
+def qualify_role(role_object: AssetRole, user_id: int) -> int:
     """Check if a user meets the requirements for a role."""
-    if type(role_object) is pcs.role.Amount:
+    if type(role_object) is Amount:
         amount = get_asset_all_by_user_id(user_id)
         if amount >= min(role_object.requirement) and amount <= max(role_object.requirement):
             return amount
