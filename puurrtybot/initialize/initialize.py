@@ -1,7 +1,7 @@
 import puurrtybot, json, requests, tqdm, os
 import puurrtybot.api.blockfrost as blockfrost
 import puurrtybot.api.twitter as ttq
-import puurrtybot.functions as pf
+import puurrtybot.helper.functions as pf
 import puurrtybot.databases.database_functions as ddf
 import requests, time
 

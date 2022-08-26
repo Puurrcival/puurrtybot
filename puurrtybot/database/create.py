@@ -163,14 +163,34 @@ class User(user.User):
 
 Base.metadata.create_all(engine)
 
-SESSION = Session(bind=engine)
+
+session = Session(bind=engine)
 
 
-def sql_commit_list(function):
-    def wrapper(*arg, **kwargs):
-        sql_list = function(*arg, **kwargs)
+def sql_add(sql_function):
+    def wrapper(*args, **kwargs):
         with Session(bind=engine) as session:
-            for datapoint in sql_list:
-                session.add(datapoint)
+            result = sql_function(*args, **kwargs)
+            if type(result) is list:
+                session.add_all(result)
+            else:
+                session.add(result)
             session.commit()
+    return wrapper
+
+
+def sql_query(sql_function):
+    def wrapper(*args, **kwargs):
+        with Session(bind=engine) as session:
+            kwargs['session'] = session
+            return sql_function(*args, **kwargs)
+    return wrapper
+
+
+def sql_update(sql_function):
+    def wrapper(*args, **kwargs):
+        with Session(bind=engine) as session:
+            kwargs['session'] = session
+            sql_function(*args, **kwargs)
+            kwargs['session'].commit()
     return wrapper

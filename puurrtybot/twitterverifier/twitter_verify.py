@@ -1,4 +1,4 @@
-import puurrtybot.functions as f
+import puurrtybot.helper.functions as f
 import os, puurrtybot, json, random
 import puurrtybot.api.twitter as ttq
 verify_tweet_id = '1549207713594343425'

@@ -9,7 +9,7 @@ from requests.models import Response
 
 from puurrtybot import TWITTER_BEARER_TOKEN
 from puurrtybot.database.create import Tweet
-import puurrtybot.databases.database_queries as ddq
+import puurrtybot.database.query as dq
 
 HEADERS = {"Authorization": "Bearer {}".format(TWITTER_BEARER_TOKEN)}
 NETWORK = 'https://api.twitter.com/2'
@@ -106,7 +106,7 @@ def get_untracked_mentions_by_twitter_id(twitter_id: int, max_count: int = -1) -
         response = query(f"""/users/{twitter_id}/mentions?{next_token}tweet.fields=in_reply_to_user_id,author_id,created_at""").json()
         try:
             for tweet in response['data']:
-                if not ddq.get_tweet_by_id(int(tweet.get('id'))):
+                if not dq.get_tweet_by_tweet_id(int(tweet.get('id'))):
                     Tweets.append(map_tweet(tweet))
                 else:
                     max_count = 0

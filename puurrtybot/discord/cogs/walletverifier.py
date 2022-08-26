@@ -7,8 +7,8 @@ import puurrtybot.api.blockfrost as blockfrost
 import puurrtybot.users.user_updates as uuu
 
 
-import puurrtybot.databases.database_queries as ddq
-import puurrtybot.databases.database_inserts as ddi
+import puurrtybot.database.query as dq
+import puurrtybot.database.insert as di
 
 HIDDEN_STATUS = True
 
@@ -29,7 +29,7 @@ class WalletVerifier(commands.Cog):
         if check:
             print(f"""verified {userid} {wallet}""")
             await ctx.send(f"""<@{userid}>, transaction found, your address is now verified: {wallet}""", hidden=HIDDEN_STATUS)
-            ddi.address_new(address = wallet, user_id = userid)
+            di.new_address(address = wallet, user_id = userid)
             await uuu.user_update_role_number_of_cats(userid)
             await uuu.user_update_roles_all(userid)
             self._tasks[userid].cancel()
@@ -72,7 +72,7 @@ class WalletVerifier(commands.Cog):
         address = wallet.strip()
         address = blockfrost.get_address_by_adahandle(address)
 
-        if ddq.get_address_by_address(address):
+        if dq.get_address_by_address(address):
             await ctx.send(f"""{ctx.author.mention}, this address has been verified already: {address}""", hidden=HIDDEN_STATUS)
         elif not blockfrost.valid_address(address):
             await ctx.send(f"""{ctx.author.mention}, the entered address **{address}** **doesn't exist**. Please check the spelling and try again.""", hidden=HIDDEN_STATUS)

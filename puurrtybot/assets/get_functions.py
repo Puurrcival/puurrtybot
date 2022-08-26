@@ -2,18 +2,18 @@ import requests, pandas as pd
 import matplotlib, matplotlib.pyplot as plt
 matplotlib.style.use('ggplot')
 plt.style.use('seaborn-dark-palette')
-import puurrtybot.functions as pf
+import puurrtybot.helper.functions as pf
 from io import BytesIO
 from PIL import Image
-import puurrtybot.databases.database_queries as ddq
+import puurrtybot.database.query as dq
 
 
 def get_asset_name(asset: str):
-    return ddq.get_asset_by_id(asset).name
+    return dq.get_asset_by_asset_id(asset).name
 
 
 def get_asset_image_url(asset: str):
-    return ddq.get_asset_by_id(asset).img_url
+    return dq.get_asset_by_asset_id(asset).img_url
 
 
 def get_asset_image(asset: str, basewidth: int = 1200, stream: bool = True):
@@ -33,7 +33,7 @@ def get_asset_image(asset: str, basewidth: int = 1200, stream: bool = True):
 
 def get_asset_sale_history(asset):
     try:
-        sh = ddq.get_asset_by_id(asset)
+        sh = dq.get_asset_by_asset_id(asset)
         sh.sales.sort(key=lambda x: x.timestamp, reverse=True)
         sales = [sale.amount/1_000_000 for sale in sh.sales]
         timestamps = [sale.timestamp for sale in sh.sales]
@@ -56,9 +56,9 @@ def get_asset_sale_history(asset):
 
 
 def get_asset_sale_history_plot(asset):
-    sh = ddq.get_asset_by_id(asset)
+    sh = dq.get_asset_by_asset_id(asset)
     sh.sales.sort(key=lambda x: x.timestamp, reverse=False)
-    df = pd.DataFrame([(sale.amount/1_000_000, pf.get_formatted_date(sale.timestamp).split(' at')[0]) for sale in sh.sales], columns=['sell','time'])
+    df = pd.DataFrame([(sale.amount/1_000_000, pf.timestamp_to_formatted_date_with_time(sale.timestamp).split(' at')[0]) for sale in sh.sales], columns=['sell','time'])
     df = df.set_index('time')
     ax = df.plot(style='.-' , yticks=[i*100 for i in range(max(int(df['sell'].min()/100)-2,0),int(df['sell'].max()/100)+2)],alpha=0.75, rot=0, legend=False, markersize=20,  markerfacecolor='darkblue')
     ax.set(xlabel="", ylabel="")

@@ -1,6 +1,6 @@
 import puurrtybot.api.blockfrost as blockfrost
 
-import puurrtybot.functions as f
+import puurrtybot.helper.functions as f
 import os, puurrtybot, json, random
 
 wallet_verify_dir = f"""{puurrtybot.PATH}/puurrtybot/databases/verify_wallet"""

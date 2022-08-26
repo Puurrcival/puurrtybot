@@ -5,7 +5,8 @@ import requests
 from requests.models import Response
 
 from puurrtybot.database.create import Sale, Listing
-import puurrtybot.databases.database_queries as ddq
+import puurrtybot.database.query as dq
+import puurrtybot.helper.functions as pf
 
 NETWORK = """https://server.jpgstoreapis.com"""
 JPGSTORE_STATUS_CODES = {
@@ -21,7 +22,7 @@ def query(query_string: str) -> Response:
     return response
 
 
-def time_to_timestamp(timeformat):
+def time_to_timestamp(timeformat: str) -> int:
     timeformat = timeformat.split('.')[0].split('+')[0].replace('T',' ')
     return int(datetime.datetime.strptime(timeformat,"%Y-%m-%d %H:%M:%S").replace(tzinfo=datetime.timezone.utc).timestamp())
 
@@ -66,7 +67,7 @@ def get_sales_untracked(policy_id: str) -> List[Sale]:
         sales = get_sales(policy_id, count)
         count+=50
         for sale in sales:
-            if ddq.get_sale_by_tx_hash(sale.tx_hash):
+            if dq.get_sale_by_tx_hash(sale.tx_hash):
                 count = None
                 break
             else:
@@ -91,7 +92,7 @@ def get_listings_untracked(policy_id: str) -> List[Listing]:
         listings = get_listings(policy_id, count)
         count+=50
         for listing in listings:
-            if ddq.get_listing_by_id(listing.listing_id):
+            if dq.get_listing_by_id(listing.listing_id):
                 count = None
                 break
             else:

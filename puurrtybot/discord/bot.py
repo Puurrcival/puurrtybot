@@ -1,16 +1,15 @@
 from venv import create
-import puurrtybot
 import puurrtybot, os, discord
 from discord.ext import commands
 from discord_slash import SlashCommand, SlashContext
 from discord_slash.utils.manage_commands import create_choice, create_option
-import puurrtybot.functions as pf
+import puurrtybot.helper.functions as pf
 import puurrtybot.assets.get_functions as agf
-import puurrtybot.users.user_updates as uup
+#import puurrtybot.users.user_updates as uup
 
-import puurrtybot.databases.database_queries as ddq
-import puurrtybot.databases.database_inserts as ddi
-
+import puurrtybot.database.query as dq
+import puurrtybot.database.insert as di
+from puurrtybot.helper import fuzzy_search, asset_profile
 
 intents = discord.Intents.default()
 intents.members = True
@@ -23,7 +22,7 @@ async def on_ready():
     #pii.initialize_databases()
     puurrtybot.GUILD = bot.get_guild(puurrtybot.GUILD)
     for member in puurrtybot.GUILD.members:
-        ddi.user_new(user_id = member.id, username = member.name)
+        di.new_user(user_id = member.id, username = member.name)
     
     #    try:
     #        puurrtybot.USERS[str(member.id)]
@@ -41,7 +40,7 @@ async def update(ctx):
 
 @bot.command()
 async def balance(ctx):
-    await ctx.send(ddq.get_user_by_id(ctx.message.author.id).balance)
+    await ctx.send(dq.get_user_by_user_id(ctx.message.author.id).balance)
 
 
 @bot.command()
@@ -73,9 +72,21 @@ async def party(ctx):
 
 
 @bot.command()
+async def profile(ctx, *, text):
+    for part in text.split(';'):
+        match = fuzzy_search.query_asset(part.strip())
+        if match:
+            ap = asset_profile.AssetProfile(match[1])
+            embed, embed_files = ap.embed
+            await ctx.send(embed = embed, files = embed_files)
+        else:
+            await ctx.send(f"""Couldn't find a cat with that name.""")
+
+
+@bot.command()
 async def search(ctx, *, text):
     try:
-        match = pf.query_asset(f"""{text}""")
+        match = pf.query_asset(f"""{text.strip()}""")
         #print(f"""https://{agf.get_asset_image_url(match[1])}""")
         sale_history = agf.get_asset_sale_history(match[1])
         #image = agf.get_asset_image(match[1], basewidth = 120)
@@ -91,7 +102,7 @@ async def search(ctx, *, text):
         embed.add_field(name="Lowest", value=f"""{sale_history['lowest']} ₳""", inline=True)
         embed.add_field(name="Highest", value=f"""{sale_history['highest']} ₳""", inline=True)
         embed.add_field(name="Volume", value=f"""{sale_history['volume']} ₳""", inline=True)
-        embed.add_field(name=f"""Minted""", value=f"""For {puurrtybot.ASSETS[match[1]]['mint_price']}₳ on {pf.get_formatted_date(puurrtybot.ASSETS[match[1]]['mint_time'])}.""", inline=False)
+        embed.add_field(name=f"""Minted""", value=f"""For {puurrtybot.ASSETS[match[1]]['mint_price']}₳ on {pf.timestamp_to_formatted_date_with_time(puurrtybot.ASSETS[match[1]]['mint_time'])}.""", inline=False)
 
         embed.set_footer(text="")
         if sale_history['traded']>1:
@@ -108,7 +119,7 @@ async def search(ctx, *, text):
 
 @bot.command()
 async def twitter(ctx):
-    user = ddq.get_user_by_id(ctx.message.author.id)
+    user = dq.get_user_by_user_id(ctx.message.author.id)
     if user.twitter_id:
         await ctx.send(f"""https://twitter.com/{user.twitter_handle}""")
     else:
@@ -117,7 +128,7 @@ async def twitter(ctx):
 
 @bot.command()
 async def n_cats(ctx):
-    await ctx.send(ddq.get_user_number_of_assets(ctx.message.author.id))
+    await ctx.send(dq.get_user_number_of_assets(ctx.message.author.id))
 
 
 

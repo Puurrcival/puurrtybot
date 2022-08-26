@@ -6,8 +6,8 @@ import puurrtybot.api.twitter as ttq
 import puurrtybot.twitterverifier.twitter_verify as tvt
 
 
-import puurrtybot.databases.database_queries as ddq
-import puurrtybot.databases.database_inserts as ddi
+import puurrtybot.database.query as dq
+import puurrtybot.database.insert as di
 
 HIDDEN_STATUS = True
 
@@ -30,7 +30,7 @@ class TwitterVerifier(commands.Cog):
         twitter_handle = self.verification[user_id].twitter_handle
         if check:
             await ctx.send(f"""<@{user_id}>, reply found, your twitter account is now verified: {twitter_handle}""", hidden=HIDDEN_STATUS)
-            ddi.user_change_twitter(user_id, self.verification[user_id].twitter_id, self.verification[user_id].twitter_handle)
+            di.user_change_twitter(user_id, self.verification[user_id].twitter_id, self.verification[user_id].twitter_handle)
             self._tasks[user_id].cancel()
         elif self.counter[user_id] > count:
             await ctx.send(f"""<@{user_id}>, verifying time exceeded.""", hidden=HIDDEN_STATUS)
@@ -68,7 +68,7 @@ class TwitterVerifier(commands.Cog):
         twitter_handle = twitter_handle.strip('@')
         twitter_id = ttq.get_twitter_id_by_username(twitter_handle)
 
-        if ddq.get_user_by_id(user_id).twitter_id:
+        if dq.get_user_by_user_id(user_id).twitter_id:
             await ctx.send(f"""{ctx.author.mention}, {twitter_handle} already verified""", hidden=HIDDEN_STATUS)
         elif not twitter_id:
              await ctx.send(f"""{ctx.author.mention}, the entered twitter name **{twitter_handle}** **doesn't exist**. Please check the spelling and try again.""", hidden=HIDDEN_STATUS)        

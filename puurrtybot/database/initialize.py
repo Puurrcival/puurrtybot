@@ -1,11 +1,10 @@
 import tqdm, puurrtybot
 from puurrtybot.pcs.config import POLICY_ID
 from puurrtybot.pcs.metadata import Name
-from puurrtybot.database.create import Asset, Role, SESSION, sql_commit_list
-from puurrtybot.api import jpgstore, twitter
+from puurrtybot.database.create import Asset, Role, session, sql_add
+from puurrtybot.api import blockfrost, jpgstore, twitter
 from puurrtybot.pcs import TWITTER_ID
-import puurrtybot.api.blockfrost as blockfrost
-import puurrtybot.databases.database_queries as ddq
+from puurrtybot.database import query as dq
 from puurrtybot.pcs import role
 from puurrtybot.database import temp
 
@@ -29,7 +28,7 @@ def initialize_assets():
         address = blockfrost.get_address_by_asset(asset['asset'])
         stake_address = blockfrost.get_stake_address_by_address(address)
 
-        SESSION.add(Asset(
+        session.add(Asset(
             asset_id = asset['asset'],
             address = address,
             address_type = blockfrost.get_address_type(address),
@@ -63,32 +62,32 @@ def initialize_assets():
             ))
 
 
-@sql_commit_list
+@sql_add
 def initialize_sales():
     return [sale for sale in jpgstore.get_sales(POLICY_ID, 100_000)]
 
-@sql_commit_list
+@sql_add
 def initialize_listings():
     return [listing for listing in jpgstore.get_listings(POLICY_ID, 10_000)]
 
-@sql_commit_list
+@sql_add
 def initialize_tweets():
     return [tweet for tweet in twitter.get_mentions_by_twitter_id(TWITTER_ID)]
 
-@sql_commit_list
+@sql_add
 def initialize_users():
     return [user for user in temp.get_init_users()]
 
-@sql_commit_list
+@sql_add
 def initialize_addresses():
     return [address for address in temp.get_init_address()]
 
-@sql_commit_list
+@sql_add
 def initialize_roles():
     roles = []
     for user in temp.get_init_users():
         for role_id, role_object in role.ID_2_ROLE.items():
-            value = ddq.check_role_qualify(role_object, user.user_id)
+            value = dq.qualify_role(role_object, user.user_id)
             value = True if value > 0 else False
             roles.append(Role(role_id=role_id, requirement=value, user_id= user.user_id))
     return roles

@@ -3,7 +3,8 @@
 from enum import Enum
 
 class Trait(Enum):
-    def class_name(self):
+    @property
+    def class_name(self) -> str:
         return self.__class__.__name__.lower()
 
 

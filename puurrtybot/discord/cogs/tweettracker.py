@@ -1,10 +1,11 @@
 from discord.ext import commands, tasks
 
-import puurrtybot.databases.database_queries as ddq
-import puurrtybot.databases.database_inserts as ddi
+import puurrtybot.database.query as dq
+from puurrtybot.database.update import update_balance_by_user_id
 from puurrtybot.pcs import TWITTER_ID
-from puurrtybot.database.create import SESSION
+from puurrtybot.database.insert import insert_object
 from puurrtybot.api import twitter
+
 
 class TweetTracker(commands.Cog):
     def __init__(self, client):
@@ -12,23 +13,21 @@ class TweetTracker(commands.Cog):
 
     async def static_loop(self):
         print('TweetTracker running')
-        if not ddq.get_tweet_by_id(twitter.get_mentions_by_twitter_id_last(TWITTER_ID).tweet_id):
+        if not dq.get_tweet_by_tweet_id(twitter.get_mentions_by_twitter_id_last(TWITTER_ID).tweet_id):
             tweets = twitter.get_untracked_mentions_by_twitter_id(TWITTER_ID)      
 
             for tweet in tweets:
-                SESSION.add(tweet)
-                SESSION.commit()
                 if not tweet.in_reply_to_user_id:
-                    user = ddq.get_user_by_twitter_id(tweet.author_id)
+                    user = dq.get_user_by_twitter_id(tweet.author_id)
                     if user:
                         amount = 5000
                         await self.channel.send(f"""<@{user.user_id}> got rewarded with {amount} Coins for tweeting:\n https://twitter.com/{tweet.author_id}/status/{tweet.tweet_id}""")
-                        ddi.user_change_balance(user.user_id, amount)                
+                        update_balance_by_user_id(user.user_id, amount)                
                     else:
                         await self.channel.send(f"""https://twitter.com/{tweet.author_id}/status/{tweet.tweet_id}""")
+                insert_object(tweet)
                 print("tracked tweet")
         
-
     @commands.Cog.listener()
     async def on_ready(self):
         self.channel = self.client.get_channel(999043361983955116)

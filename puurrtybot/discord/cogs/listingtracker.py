@@ -1,10 +1,10 @@
 import discord
 from discord.ext import commands, tasks
 
-import puurrtybot.databases.database_queries as ddq
-import puurrtybot.databases.database_inserts as ddi
+import puurrtybot.database.query as dq
+import puurrtybot.database.insert as di
 from puurrtybot.api import jpgstore
-from puurrtybot.database.create import SESSION
+from puurrtybot.database.create import session
 from puurrtybot.pcs import POLICY_ID
 
 class ListingTracker(commands.Cog):
@@ -15,19 +15,19 @@ class ListingTracker(commands.Cog):
     async def static_loop(self):
         print('ListingsTracker running')
 
-        if not ddq.get_listing_by_id(jpgstore.get_listing_last(POLICY_ID).listing_id):
+        if not dq.get_listing_by_id(jpgstore.get_listing_last(POLICY_ID).listing_id):
             listings = jpgstore.get_listings_untracked(POLICY_ID)
             listings.sort(key=lambda x: x.created_at, reverse=True)
 
             for listing in listings:        
-                SESSION.add(listing)
-                SESSION.commit()
-                asset = ddq.get_asset_by_id(listing.asset_id)
+                session.add(listing)
+                session.commit()
+                asset = dq.get_asset_by_asset_id(listing.asset_id)
                 display_name = asset.name
                 embed=discord.Embed(title=f"""{display_name} just listed for {listing.amount_lovelace/1_000_000}₳!""", url=f"""https://www.jpg.store/asset/{listing.asset_id}""", description="", color=0x109319)
                 embed.set_image(url=f"""https://ipfs.io/ipfs/{asset.img_url.split('/')[-1]}""")
                 await self.channel.send(embed=embed)
-                ddi.listing_tracked(listing.listing_id)
+                di.listing_tracked(listing.listing_id)
 
 
     @commands.Cog.listener()

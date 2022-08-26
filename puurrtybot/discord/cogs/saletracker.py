@@ -1,41 +1,39 @@
-from discord.ext import commands, tasks
-import time, puurrtybot.twitter.twitter_functions as ttf
 import datetime
-import puurrtybot.databases.database_queries as ddq
-import puurrtybot.databases.database_inserts as ddi
+
+from discord.ext import commands, tasks
+import puurrtybot.twitter.twitter_functions as ttf
+import puurrtybot.database.query as dq
 from puurrtybot.api import jpgstore
-from puurrtybot.database.create import SESSION
 from puurrtybot.pcs import POLICY_ID
+from puurrtybot.helper.asset_profile import AssetProfile
+from puurrtybot.database.insert import insert_object
+
 
 class SaleTracker(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-
     async def static_loop(self):
         print('SaleTracker running')
-        if not ddq.get_sale_by_tx_hash(jpgstore.get_sale_last(POLICY_ID).tx_hash):        
+        if not dq.get_sale_by_tx_hash(jpgstore.get_sale_last(POLICY_ID).tx_hash):        
             sales = jpgstore.get_sales_untracked(POLICY_ID)
             confirmed_sales = [sale for sale in sales if sale.action in ['BUY','ACCEPT_OFFER'] and sale.confirmed_at]
             confirmed_sales.sort(key=lambda x: x.confirmed_at, reverse=True)
 
             for sale in confirmed_sales:        
-                SESSION.add(sale)
-                SESSION.commit()
-                asset = ddq.get_asset_by_id(sale.asset_id)
-                display_name = asset.name
-                asset.sales.sort(key=lambda x: x.confirmed_at, reverse=False)
-                sales_history = [sale for sale in asset.sales if sale.tracked]
+                ap = AssetProfile(sale.asset_id)
+                sales_history = ap.sale_history
 
                 if not sales_history:
-                    bought = asset.mint_price
+                    bought = ap.mint_price
                     bought_mint = "⚒️ Seller minted"
-                    bought_time = datetime.datetime.utcfromtimestamp(asset.mint_time)
+                    bought_time = ap.mint_time
                 else:
-                    bought = sales_history[-1].amount_lovelace
+                    bought = sales_history[-1].amount_lovelace/1_000_000
                     bought_mint = "🛒 Seller bought"
                     bought_time = datetime.datetime.utcfromtimestamp(sales_history[-1].confirmed_at)
-                diff = sale.amount_lovelace - bought
+                sold = sale.amount_lovelace/1_000_000
+                diff = sold - bought
                 last_time = datetime.datetime.utcfromtimestamp(sale.confirmed_at)
                 hodl = last_time - bought_time
                 hours, minutes, _ = str(datetime.timedelta(seconds=hodl.seconds)).split(':')
@@ -49,12 +47,8 @@ class SaleTracker(commands.Cog):
                 else:
                     hours = ""   
                     
-                
-                diff = diff/1_000_000
-                bought = bought/1_000_000
-                saleamount = sale.amount_lovelace/1_000_000
                 if bought != 0:
-                    percentage = 100/bought*saleamount
+                    percentage = 100/bought*sold
                     if diff  < 0:
                         profit = f"""📉 Seller took a loss of {diff}₳ (-{round(100-percentage, 2)}%)."""
                     else:
@@ -66,12 +60,11 @@ class SaleTracker(commands.Cog):
                 hodl_string = f"""\n💰 Seller hodl for {days}{hours}{int(minutes)} minutes."""
                 content_detail = f"""{bought_string}{hodl_string}\n{profit}\n"""
 
-                content=f"""🐱 {display_name} just sold for {saleamount}₳!{content_detail}"""
+                content=f"""🐱 {ap.asset_name} just sold for {sold}₳!{content_detail}"""
                 tweet_id = ttf.tweet_sale(content, sale.asset_id)
-                ddi.sale_tracked(sale.tx_hash)
                 await self.channel.send(f"""https://twitter.com/PuurrtyBot/status/{tweet_id}""")
+                insert_object(sale)
                 print("sent sale tweet")
-
 
     @commands.Cog.listener()
     async def on_ready(self):

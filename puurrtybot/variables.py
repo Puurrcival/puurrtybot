@@ -3,6 +3,7 @@ import json, tqdm, os
 
 PATH = Path(__file__).parent.parent
 DATABASES_DIR = f"""{PATH}/puurrtybot/data"""
+IMAGES_DIR = f"""{PATH}/puurrtybot/data/images_small"""
 
 
 GUILD = 998148160243384321

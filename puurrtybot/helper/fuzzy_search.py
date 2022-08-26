@@ -1,50 +1,15 @@
+import multiprocessing
+
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sparse_dot_topn import awesome_cossim_topn
-import multiprocessing, pickle, random, datetime, pickle, pandas as pd, numpy as np, puurrtybot
-from PIL import Image
-import puurrtybot, puurrtybot.assets.get_functions as agf
+import pandas as pd, numpy as np
 
-def flatten_list(nested_list):
-    return [element for sublist in nested_list for element in sublist]
-
-
-def ordinal(n: int) -> str:
-    return f"{n:d}{'tsnrhtdd'[(n//10%10!=1)*(n%10<4)*n%10::4]}"
-
-
-def time_to_timestamp(timeformat):
-    return int(datetime.datetime.strptime(timeformat,"%Y-%m-%d %H:%M:%S").replace(tzinfo=datetime.timezone.utc).timestamp())
-
-
-def timestamp_to_utcdatetime(timestamp):
-    return datetime.datetime.utcfromtimestamp(timestamp)
-
-
-def timestamp_to_utctime(timestamp):
-    return str(datetime.datetime.utcfromtimestamp(timestamp))
-
-
-def get_utc_time():
-    return int(datetime.datetime.now(datetime.timezone.utc).timestamp())
-
-
-def get_formatted_date(date):
-    date = timestamp_to_utcdatetime(date)
-    return date.strftime(f'{ordinal(date.day)} %B %Y at %H:%m UTC')
-
-
-def get_random_between(start: int = 1, end: int = 100):
-    return str(random.choice(list(range(start, end+1))))
-
-
-def get_random_quantity():
-    random_q = list(range(2_000_000, 2_999_999))
-    return str(random.choice(random_q)/1_000_000)
+import puurrtybot.database.query as dq
 
 
 class FastCandidateFinder(object):
     def __init__(self):
-        self.assets = {agf.get_asset_name(asset):asset for asset in puurrtybot.ASSETS.keys()}
+        self.assets = {asset.name:asset.asset_id for asset in dq.get_asset_all()}
         self.ngram_size = 2        
         self.tfidf_vectorizer = None
         self.fit_vectorizer = None
@@ -63,10 +28,6 @@ class FastCandidateFinder(object):
 
     def get_tfidf(self, data):
         return self.fit_vectorizer.transform(data)
-    
-
-    def load_tfidf(self, path: str):
-        self.fit_vectorizer = pickle.load(open(path, 'rb'))
 
 
     def get_cossim(self, A, B, top_n, threshold):
@@ -107,7 +68,6 @@ def query_asset(search):
         fcf_matcher.get_tfidf_vectorizer(data=assets_list)
         fcf_matcher.tfidf_vocabulary = fcf_matcher.assets.keys()
 
-        tfidf_vectorizer = fcf_matcher.fit_vectorizer
         tfidf_matrix = fcf_matcher.get_tfidf(data=assets_list)
         fcf_matcher.fit_vectorizer = fcf_matcher.tfidf_vectorizer
 
@@ -120,10 +80,4 @@ def query_asset(search):
         asset_name = fcf_matcher.assets[name]
         return (name, asset_name)
     except IndexError:
-        return (f"""{search}""", f"""Couldn't find a cat with that name, try another name.""")
-
-
-def resize_image(img, basewidth=1200):
-    wpercent = (basewidth/float(img.size[0]))
-    hsize = int((float(img.size[1])*float(wpercent)))
-    return img.resize((basewidth,hsize), Image.ANTIALIAS)
+        return None
