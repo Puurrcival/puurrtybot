@@ -54,7 +54,7 @@ class AssetProfile:
         self.sale_history = sale_history = dq.get_sale_history(self.asset_id)
         sale_history = [sale.amount_lovelace/1_000_000 for sale in sale_history]
         self.asset_name = asset_data.name
-        self.mint_time = timestamp_to_formatted_date(asset_data.mint_time)
+        self.mint_time = asset_data.mint_time
         self.mint_price = asset_data.mint_price/1_000_000
         self.amount_traded = len(sale_history)
         self.sale_lowest = min(sale_history) if sale_history else None
@@ -93,7 +93,7 @@ def create_embed(asset: AssetProfile) -> Tuple[Embed, List[File]]:
         image_files.append(File(asset.asset_img, filename="thumbnail.png"))
         embed.set_thumbnail(url=f"""attachment://thumbnail.png""")
         embed.add_field(name=f"""Owner""", value=f"""{asset.owner_name}""" )
-        embed.add_field(name=f"""Minted""", value=f"""For {asset.mint_price}₳ on {asset.mint_time}.""", inline=False)
+        embed.add_field(name=f"""Minted""", value=f"""For {asset.mint_price}₳ on {timestamp_to_formatted_date(asset.mint_time)}.""", inline=False)
         embed.add_field(name=f"""Times traded""", value=f"""{asset.amount_traded}""", inline=False) 
         embed.add_field(name="Lowest", value=f"""{asset.sale_lowest} ₳""", inline=True)
         embed.add_field(name="Highest", value=f"""{asset.sale_highest} ₳""", inline=True)

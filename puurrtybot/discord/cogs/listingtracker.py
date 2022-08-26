@@ -26,8 +26,8 @@ class ListingTracker(commands.Cog):
                 display_name = asset.name
                 embed=discord.Embed(title=f"""{display_name} just listed for {listing.amount_lovelace/1_000_000}₳!""", url=f"""https://www.jpg.store/asset/{listing.asset_id}""", description="", color=0x109319)
                 embed.set_image(url=f"""https://ipfs.io/ipfs/{asset.img_url.split('/')[-1]}""")
+                di.new_listing(listing.listing_id)
                 await self.channel.send(embed=embed)
-                di.listing_tracked(listing.listing_id)
 
 
     @commands.Cog.listener()

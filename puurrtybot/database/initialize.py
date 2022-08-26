@@ -8,7 +8,7 @@ from puurrtybot.api import blockfrost, jpgstore, twitter
 from puurrtybot.pcs import TWITTER_ID
 from puurrtybot.database import query as dq
 import puurrtybot.database.table as table
-from puurrtybot.database import temp
+from puurrtybot.data import init_data
 
 
 def none_string_to_none(string: str):
@@ -78,16 +78,16 @@ def initialize_tweets():
 
 @sql_add
 def initialize_users():
-    return [user for user in temp.get_init_users()]
+    return [user for user in init_data.get_init_users()]
 
 @sql_add
 def initialize_addresses():
-    return [address for address in temp.get_init_address()]
+    return [address for address in init_data.get_init_address()]
 
 @sql_add
 def initialize_roles():
     roles = []
-    for user in temp.get_init_users():
+    for user in init_data.get_init_users():
         for role_id, role_object in table.ID_2_ROLE.items():
             value = dq.qualify_role(role_object, user.user_id)
             value = True if value > 0 else False

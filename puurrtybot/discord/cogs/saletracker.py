@@ -27,7 +27,7 @@ class SaleTracker(commands.Cog):
                 if not sales_history:
                     bought = ap.mint_price
                     bought_mint = "⚒️ Seller minted"
-                    bought_time = ap.mint_time
+                    bought_time = datetime.datetime.utcfromtimestamp(ap.mint_time)
                 else:
                     bought = sales_history[-1].amount_lovelace/1_000_000
                     bought_mint = "🛒 Seller bought"
@@ -62,8 +62,8 @@ class SaleTracker(commands.Cog):
 
                 content=f"""🐱 {ap.asset_name} just sold for {sold}₳!{content_detail}"""
                 tweet_id = tweepy.tweet_sale(content, sale.asset_id)
-                await self.channel.send(f"""https://twitter.com/PuurrtyBot/status/{tweet_id}""")
                 insert_object(sale)
+                await self.channel.send(f"""https://twitter.com/PuurrtyBot/status/{tweet_id}""")
                 print("sent sale tweet")
 
     @commands.Cog.listener()

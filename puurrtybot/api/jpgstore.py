@@ -6,7 +6,6 @@ from requests.models import Response
 
 from puurrtybot.database.create import Sale, Listing
 import puurrtybot.database.query as dq
-import puurrtybot.helper.functions as pf
 
 NETWORK = """https://server.jpgstoreapis.com"""
 JPGSTORE_STATUS_CODES = {

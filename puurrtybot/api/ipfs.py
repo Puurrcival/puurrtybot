@@ -22,4 +22,5 @@ def query(query_string: str) -> Response:
 
 
 def get_image(cid: str) -> Response:
+    """Get image from ipfs by cid (ipfs asset id)."""
     return query(f"""/{cid}""")

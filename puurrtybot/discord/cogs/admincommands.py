@@ -1,3 +1,5 @@
+import asyncio
+
 from discord.ext import commands
 import discord, random
 import puurrtybot, datetime, json
@@ -14,6 +16,15 @@ class AdminCommands(commands.Cog):
         self.client = client
         self.channel = self.client.get_channel(1002510149929422858)
         self.ctx = None
+
+
+
+    @commands.command()
+    async def purge(self, ctx, limit: int):
+        if ctx.message.author.id == 642352900357750787:
+            await ctx.message.delete()
+            await asyncio.sleep(1)
+            await ctx.channel.purge(limit=limit)
 
 
     @commands.command()

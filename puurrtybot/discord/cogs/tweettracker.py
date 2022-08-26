@@ -17,6 +17,7 @@ class TweetTracker(commands.Cog):
             tweets = twitter.get_untracked_mentions_by_twitter_id(TWITTER_ID)      
 
             for tweet in tweets:
+                insert_object(tweet)
                 if not tweet.in_reply_to_user_id:
                     user = dq.get_user_by_twitter_id(tweet.author_id)
                     if user:
@@ -25,7 +26,6 @@ class TweetTracker(commands.Cog):
                         update_balance_by_user_id(user.user_id, amount)                
                     else:
                         await self.channel.send(f"""https://twitter.com/{tweet.author_id}/status/{tweet.tweet_id}""")
-                insert_object(tweet)
                 print("tracked tweet")
         
     @commands.Cog.listener()
