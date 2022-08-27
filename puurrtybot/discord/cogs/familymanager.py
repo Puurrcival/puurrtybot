@@ -11,7 +11,7 @@ HIDDEN_STATUS = True
 FAMILY_DICT = {e.name.title():e.value.role_id for e in Family}
 
 class FamilyManager(commands.Cog):
-    def __init__(self, client):
+    def __init__(self, client: commands.bot.Bot):
         self.client = client
         self.ctx_id = {}
 
@@ -27,7 +27,7 @@ class FamilyManager(commands.Cog):
                             choices = [create_choice(name = name, value = str(value)) for name, value in FAMILY_DICT.items()])
                    ]
                       )
-    async def join_pack(self, ctx:SlashContext, family_name: str):
+    async def join_pack(self, ctx: SlashContext, family_name: str):
         family_name = int(family_name)
         n = dq.get_amount_of_assets_for_role(family_name, ctx.author_id)
         s = {1:''}.get(n, 's')
@@ -45,5 +45,5 @@ class FamilyManager(commands.Cog):
         await ctx.send(content, hidden=HIDDEN_STATUS)
         
 
-def setup(client):
+def setup(client: commands.bot.Bot):
     client.add_cog(FamilyManager(client))

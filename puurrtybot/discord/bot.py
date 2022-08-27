@@ -12,12 +12,13 @@ from puurrtybot.helper import fuzzy_search, asset_profile
 intents = discord.Intents.default()
 intents.members = True
 
-bot = commands.Bot(command_prefix='!', intents=intents)
-slash = SlashCommand(bot, sync_commands=True)
+bot: commands.Bot = commands.Bot(command_prefix='!', intents=intents)
+slash: SlashCommand = SlashCommand(bot, sync_commands=True)
 
 
 @bot.event
-async def on_ready():
+async def on_ready() -> None:
+    """On bot start do stuff."""
     user_ids = [user.user_id for user in dq.get_user_all()]
     puurrtybot.GUILD = bot.get_guild(puurrtybot.GUILD)
     puurrtybot.DISCORD_ROLES = {role.id:role for role in puurrtybot.GUILD.roles}
@@ -29,17 +30,18 @@ async def on_ready():
 
 
 @bot.command()
-async def balance(ctx):
+async def balance(ctx: commands.Context) -> None:
+    """Reply with balance of an user."""
     await ctx.send(dq.get_user_by_user_id(ctx.message.author.id).balance)
 
 
 @bot.command()
-async def bal(ctx):
+async def bal(ctx: commands.Context):
     await balance(ctx)
 
 
 @bot.command()
-async def party(ctx):
+async def party(ctx: commands.Context):
     if ctx.message.author.id == 642352900357750787:
         await ctx.send("""A party is about to start join with :tada:""")
 
@@ -61,7 +63,7 @@ async def party(ctx):
 
 
 @bot.command()
-async def profile(ctx, *, text):
+async def profile(ctx: commands.Context, *, text: str):
     for part in text.split(';'):
         match = fuzzy_search.query_asset(part.strip())
         if match:
@@ -73,7 +75,7 @@ async def profile(ctx, *, text):
 
 
 @bot.command()
-async def twitter(ctx):
+async def twitter(ctx: commands.Context):
     user = dq.get_user_by_user_id(ctx.message.author.id)
     if user.twitter_id:
         await ctx.send(f"""https://twitter.com/{user.twitter_handle}""")
@@ -82,8 +84,8 @@ async def twitter(ctx):
 
 
 @bot.command()
-async def n_cats(ctx):
-    await ctx.send(dq.get_user_number_of_assets(ctx.message.author.id))
+async def n_cats(ctx: commands.Context):
+    await ctx.send(dq.get_asset_all_by_user_id(ctx.message.author.id))
 
 
 for filename in os.listdir(puurrtybot.PATH/'puurrtybot/discord/cogs'):

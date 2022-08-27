@@ -166,7 +166,7 @@ Base.metadata.create_all(engine)
 session = Session(bind=engine)
 
 
-def sql_add(sql_function):
+def sql_insert(sql_function):
     def wrapper(*args, **kwargs):
         with Session(bind=engine) as session:
             result = sql_function(*args, **kwargs)
@@ -180,9 +180,8 @@ def sql_add(sql_function):
 
 def sql_query(sql_function):
     def wrapper(*args, **kwargs):
-        with Session(bind=engine) as session:
-            kwargs['session'] = session
-            return sql_function(*args, **kwargs)
+        kwargs['session'] = Session(bind=engine)
+        return sql_function(*args, **kwargs)
     return wrapper
 
 

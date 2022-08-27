@@ -1,14 +1,12 @@
 import discord
 from discord.ext import commands, tasks
 
-import puurrtybot.database.query as dq
-import puurrtybot.database.insert as di
+from puurrtybot.database import query as dq, insert as di
 from puurrtybot.api import jpgstore
-from puurrtybot.database.create import session
 from puurrtybot.pcs import POLICY_ID
 
 class ListingTracker(commands.Cog):
-    def __init__(self, client):
+    def __init__(self, client: commands.bot.Bot):
         self.client = client
 
 
@@ -19,9 +17,8 @@ class ListingTracker(commands.Cog):
             listings = jpgstore.get_listings_untracked(POLICY_ID)
             listings.sort(key=lambda x: x.created_at, reverse=True)
 
-            for listing in listings:        
-                session.add(listing)
-                session.commit()
+            for listing in listings:
+                di.insert_object(listing)        
                 asset = dq.get_asset_by_asset_id(listing.asset_id)
                 display_name = asset.name
                 embed=discord.Embed(title=f"""{display_name} just listed for {listing.amount_lovelace/1_000_000}₳!""", url=f"""https://www.jpg.store/asset/{listing.asset_id}""", description="", color=0x109319)
@@ -37,5 +34,5 @@ class ListingTracker(commands.Cog):
         new_task.start()
 
 
-def setup(client):
+def setup(client: commands.bot.Bot):
     client.add_cog(ListingTracker(client))

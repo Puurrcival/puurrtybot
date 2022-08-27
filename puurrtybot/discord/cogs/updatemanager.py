@@ -1,20 +1,17 @@
-from calendar import c
 from discord.ext import commands, tasks
 import tqdm
-import puurrtybot
 
-import puurrtybot.api.blockfrost as blockfrost
-import puurrtybot.database.query as dq
-import puurrtybot.database.update as du
-import puurrtybot.database.insert as di
+import puurrtybot
+from puurrtybot.api import blockfrost, twitter
+from puurrtybot.database import query as dq, update as du, insert as di
 from puurrtybot.database.create import User
-import puurrtybot.helper.functions as func
+from puurrtybot.helper import functions as hf
 from puurrtybot.pcs.role import ID_2_ROLE, Family
 from puurrtybot import DISCORD_ROLES
 
 
 async def update_asset_all():
-    outdated_assets = dq.get_asset_all(func.get_utc_time()-24*60*60)
+    outdated_assets = dq.get_asset_all(hf.get_utc_time()-24*60*60)
     for asset in tqdm.tqdm(outdated_assets):
         address = blockfrost.get_address_by_asset(asset.asset_id)
         du.update_address_by_asset_id(asset.asset_id, address)
@@ -49,31 +46,39 @@ async def update_role_all_by_user(user: User):
             await member.add_roles(*add_roles)
 
 
+async def update_twitter_by_user(user: User):
+    du.update_twitter_by_user_id(user.user_id, user.twitter_id, twitter.get_username_by_twitter_id(user.twitter_id))
+
+
 async def update_user(user: User):
     await update_address_all_by_user(user)
     user = dq.get_user_by_user_id(user.user_id)
     await update_role_all_by_user(user)
+    await update_twitter_by_user(user)
 
 
 class UpdateManager(commands.Cog):
-    def __init__(self, client):
+    """Updating the database and discord roles."""
+    def __init__(self, client: commands.bot.Bot):
         self.client = client
 
     async def static_loop(self):
         print('UpdateManager running')
-        if dq.get_asset_all(func.get_utc_time()-24*60*60):
+        if dq.get_asset_all(hf.get_utc_time()-24*60*60):
             """Update Assets."""
             await update_asset_all()
 
-            """Update Addresses."""
             users = dq.get_user_all()   
             for user in tqdm.tqdm(users):
+                """Update Addresses."""
                 await update_address_all_by_user(user)
 
-            """Update Roles."""
-            users = dq.get_user_all()   
-            for user in tqdm.tqdm(users):
+                """Update Roles.""" 
                 await update_role_all_by_user(user)
+
+                """Update Twitter"""
+                await update_twitter_by_user(user)
+
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -81,5 +86,5 @@ class UpdateManager(commands.Cog):
         new_task.start()
 
 
-def setup(client):
+def setup(client: commands.bot.Bot):
     client.add_cog(UpdateManager(client))

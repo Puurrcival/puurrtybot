@@ -18,7 +18,7 @@ def get_user_all(session=None) -> List[User]:
 def get_user_by_user_id(user_id: int, session=None) -> User:
     """Get user data by user_id."""
     return session.query(User).filter(User.user_id == user_id).first()
-
+#print(get_user_by_user_id(user_id = 642352900357750787))
 
 @sql_query
 def get_user_by_twitter_id(twitter_id: int, session=None) -> User:

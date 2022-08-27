@@ -1,14 +1,12 @@
 from discord.ext import commands, tasks
 
-import puurrtybot.database.query as dq
-from puurrtybot.database.update import update_balance_by_user_id
+from puurrtybot.database import query as dq, insert as di, update as du
 from puurrtybot.pcs import TWITTER_ID
-from puurrtybot.database.insert import insert_object
 from puurrtybot.api import twitter
 
 
 class TweetTracker(commands.Cog):
-    def __init__(self, client):
+    def __init__(self, client: commands.bot.Bot):
         self.client = client
 
     async def static_loop(self):
@@ -17,13 +15,13 @@ class TweetTracker(commands.Cog):
             tweets = twitter.get_untracked_mentions_by_twitter_id(TWITTER_ID)      
 
             for tweet in tweets:
-                insert_object(tweet)
+                di.insert_object(tweet)
                 if not tweet.in_reply_to_user_id:
                     user = dq.get_user_by_twitter_id(tweet.author_id)
                     if user:
                         amount = 5000
                         await self.channel.send(f"""<@{user.user_id}> got rewarded with {amount} Coins for tweeting:\n https://twitter.com/{tweet.author_id}/status/{tweet.tweet_id}""")
-                        update_balance_by_user_id(user.user_id, amount)                
+                        du.update_balance_by_user_id(user.user_id, amount)                
                     else:
                         await self.channel.send(f"""https://twitter.com/{tweet.author_id}/status/{tweet.tweet_id}""")
                 print("tracked tweet")
@@ -35,5 +33,5 @@ class TweetTracker(commands.Cog):
         new_task.start()
 
 
-def setup(client):
+def setup(client: commands.bot.Bot):
     client.add_cog(TweetTracker(client))

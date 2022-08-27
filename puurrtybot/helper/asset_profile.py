@@ -1,4 +1,4 @@
-"""A module that create a profile for an asset."""
+"""A module that creates a profile for an asset."""
 from dataclasses import dataclass
 from typing import List, Tuple
 from io import BytesIO
@@ -84,8 +84,8 @@ def get_asset_sale_history_plot(sale_history: List[Sale]) -> BytesIO:
 
 
 def create_embed(asset: AssetProfile) -> Tuple[Embed, List[File]]:
-        image_files = []
-        embed = Embed(  title=f"""**{asset.asset_name}**""",
+        image_files: List[File] = []
+        embed: Embed = Embed(  title=f"""**{asset.asset_name}**""",
                         url=f"""https://www.jpg.store/asset/{asset.asset_id}""",
                         description="",
                         color=0x109319)

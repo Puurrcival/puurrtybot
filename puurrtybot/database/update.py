@@ -2,10 +2,19 @@ import tqdm
 
 import puurrtybot.api.blockfrost as blockfrost
 import puurrtybot.database.query as dq
-import puurrtybot.database.insert as di
 
 from puurrtybot.database.create import sql_update, User, Asset
+from puurrtybot.database.table import Table
 import puurrtybot.helper.functions as func
+
+
+@sql_update
+def update_object(sql_object: Table, session = None):
+    session.query(
+        sql_object.__class__).filter(
+        getattr(sql_object.__class__, sql_object.primary_key) == getattr(sql_object, sql_object.primary_key)
+        ).update(sql_object.dictionary)
+
 
 @sql_update
 def update_balance_by_user_id(user_id: int, amount: int, session=None):
@@ -31,6 +40,6 @@ def update_address_by_asset_id(asset_id, address, session=None):
 
 
 def update_asset_address_all():
-    for asset_id in tqdm.tqdm([asset.asset_id for asset in dq.get_asset_all()]):
-        address = blockfrost.get_address_by_asset(asset_id)
-        di.asset_change_address(asset_id, address)
+    for asset in tqdm.tqdm(dq.get_asset_all()):
+        address = blockfrost.get_address_by_asset(asset.asset_id)
+        update_address_by_asset_id(asset.asset_id, address)

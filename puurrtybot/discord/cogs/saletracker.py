@@ -2,15 +2,14 @@ import datetime
 
 from discord.ext import commands, tasks
 import puurrtybot.api.tweepy as tweepy
-import puurrtybot.database.query as dq
+from puurrtybot.database import query as dq, insert as di
 from puurrtybot.api import jpgstore
 from puurrtybot.pcs import POLICY_ID
 from puurrtybot.helper.asset_profile import AssetProfile
-from puurrtybot.database.insert import insert_object
 
 
 class SaleTracker(commands.Cog):
-    def __init__(self, client):
+    def __init__(self, client: commands.bot.Bot):
         self.client = client
 
     async def static_loop(self):
@@ -62,7 +61,7 @@ class SaleTracker(commands.Cog):
 
                 content=f"""🐱 {ap.asset_name} just sold for {sold}₳!{content_detail}"""
                 tweet_id = tweepy.tweet_sale(content, sale.asset_id)
-                insert_object(sale)
+                di.insert_object(sale)
                 await self.channel.send(f"""https://twitter.com/PuurrtyBot/status/{tweet_id}""")
                 print("sent sale tweet")
 
@@ -73,5 +72,5 @@ class SaleTracker(commands.Cog):
         new_task.start()
 
 
-def setup(client):
+def setup(client: commands.bot.Bot):
     client.add_cog(SaleTracker(client))

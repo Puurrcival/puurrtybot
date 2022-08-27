@@ -1,13 +1,11 @@
 from dataclasses import dataclass
 from typing import List
 
-from discord.ext import commands, tasks
+from discord.ext import commands
 
 import puurrtybot, discord, random
-import puurrtybot.database.query as dq
-import puurrtybot.database.update as du
+from puurrtybot.database import query as dq, update as du
 from puurrtybot.pcs import metadata as md
-from puurrtybot.pcs.metadata import Trait
 
 
 @dataclass(order=True)
@@ -30,7 +28,7 @@ class PartyUser:
 
 
 class CatRumble(commands.Cog):
-    def __init__(self, client):
+    def __init__(self, client: commands.bot.Bot):
         self.client = client
 
     async def static_loop(self):
@@ -145,5 +143,5 @@ class CatRumble(commands.Cog):
         pass
 
 
-def setup(client):
+def setup(client: commands.bot.Bot):
     client.add_cog(CatRumble(client))

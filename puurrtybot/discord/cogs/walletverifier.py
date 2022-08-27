@@ -4,10 +4,9 @@ from discord.ext import commands, tasks
 from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
 
-import puurrtybot.helper.functions as hf
-import puurrtybot.api.blockfrost as blockfrost
-import puurrtybot.database.query as dq
-import puurrtybot.database.insert as di
+from puurrtybot.helper import functions as hf
+from puurrtybot.api import blockfrost
+from puurrtybot.database import query as dq, insert as di
 from puurrtybot.discord.cogs.updatemanager import update_role_all_by_user
 
 HIDDEN_STATUS = True
@@ -37,7 +36,7 @@ class WalletVerify:
 
 
 class WalletVerifier(commands.Cog):
-    def __init__(self, client):
+    def __init__(self, client: commands.bot.Bot):
         self.client = client
         self._tasks = {} 
         self.counter = {}
@@ -45,7 +44,7 @@ class WalletVerifier(commands.Cog):
         self.verification = {}
 
 
-    async def static_loop(self, userid, count):
+    async def static_loop(self, userid: int, count: int):
         ctx = self.ctx_id[userid]
         check = self.verification[userid].verify_transaction()
         wallet = self.verification[userid].address
@@ -65,7 +64,7 @@ class WalletVerifier(commands.Cog):
             await ctx.send(f"""<@{userid}>, verifying time exceeded.""", hidden=HIDDEN_STATUS)
             print('time exceeded')
 
-    def task_launcher(self, userid, seconds, count):
+    def task_launcher(self, userid: int, seconds: int, count: int):
         new_task = tasks.loop(seconds = seconds, count = count)(self.static_loop)
         new_task.start(userid, count)
         self._tasks[userid] = new_task
@@ -82,7 +81,7 @@ class WalletVerifier(commands.Cog):
                             option_type=3)
                    ]
                       )
-    async def verify_task(self, ctx:SlashContext, wallet:str):
+    async def verify_task(self, ctx: SlashContext, wallet: str):
         print(wallet)
         userid = ctx.author_id
         try:    
@@ -107,5 +106,5 @@ class WalletVerifier(commands.Cog):
             self.task_launcher(userid, seconds=60*5, count=12)
     
 
-def setup(client):
+def setup(client: commands.bot.Bot):
     client.add_cog(WalletVerifier(client))

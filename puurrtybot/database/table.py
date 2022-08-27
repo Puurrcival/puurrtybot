@@ -6,8 +6,19 @@ from pycardano import AddressType
 from puurrtybot.pcs import metadata
     
 
+@dataclass
+class Table:
+    @property
+    def primary_key(self):
+        return list(self.__dataclass_fields__)[0]
+
+    @property
+    def dictionary(self):
+        return {key:getattr(self, key) for key, value in self.__dataclass_fields__.items() if value.repr}
+
+
 @dataclass(order=True)
-class Sale:
+class Sale(Table):
     tx_hash: str = None
     asset_id: str = None
     action: str = None
@@ -20,8 +31,8 @@ class Sale:
     tracked: bool = None
 
 
-@dataclass
-class Asset:
+@dataclass(order=True)
+class Asset(Table):
     asset_id: str = None
     address: str = None
     address_type: AddressType = None,
@@ -53,7 +64,7 @@ class Asset:
     mint_price: int = None
     mint_time: int = None
     updated_on: int = field(init=False)
-    sales: List[Sale] = field(default_factory=list)
+    sales: List[Sale] = field(default_factory=list, repr=False)
 
     def __post_init__(self):
         self.background = metadata.Background(self.background)
@@ -73,16 +84,16 @@ class Asset:
         self.suffix_name = metadata.Suffix_name(self.suffix_name)
 
 
-@dataclass
-class Address:
+@dataclass(order=True)
+class Address(Table):
     address: str = None
     stake_address: Optional[str] = None
     user_id: int = None
-    assets: List[Asset] = field(default_factory=list)
+    assets: List[Asset] = field(default_factory=list, repr=False)
 
-    
-@dataclass   
-class Listing:
+
+@dataclass(order=True) 
+class Listing(Table):
     listing_id: str = None
     asset_id: str = None
     created_at: int = None
@@ -91,9 +102,9 @@ class Listing:
     tracked: bool = False  
 
 
-@dataclass
-class Role:
-    ix: int = field(init=False)
+@dataclass(order=True)
+class Role(Table):
+    ix: str = field(init=False)
     role_id: int = None
     user_id: int = None
     requirement: Union[tuple, int, bool] = None
@@ -103,8 +114,8 @@ class Role:
         self.ix = f"""{self.role_id}_{self.user_id}"""
     
 
-@dataclass   
-class Tweet:
+@dataclass(order=True)
+class Tweet(Table):
     tweet_id: int = None
     created_at: int = None
     author_id: int = None
@@ -112,14 +123,14 @@ class Tweet:
     tracked: bool = False 
     
 
-@dataclass
-class User:
+@dataclass(order=True)
+class User(Table):
     user_id: int = None
     balance: int = None
     username: str = None
     twitter_id: int = None
     twitter_handle: str = None
     updated_on: int = field(init=False)
-    addresses: List[Address] = field(default_factory=list)
-    roles: List[Role] = field(default_factory=list)
-    tweets: List[Tweet] = field(default_factory=list)
+    addresses: List[Address] = field(default_factory=list, repr=False)
+    roles: List[Role] = field(default_factory=list, repr=False)
+    tweets: List[Tweet] = field(default_factory=list, repr=False)

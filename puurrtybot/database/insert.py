@@ -1,9 +1,9 @@
-from puurrtybot.database.create import Address, User, Sale, Listing, Tweet, sql_add
+from puurrtybot.database.create import Address, User, Sale, Listing, Tweet, sql_insert
 import puurrtybot.database.query as dq
 import puurrtybot.api.blockfrost as blockfrost
 
 
-@sql_add
+@sql_insert
 def insert_object(sql_object) -> None:
     return sql_object
 

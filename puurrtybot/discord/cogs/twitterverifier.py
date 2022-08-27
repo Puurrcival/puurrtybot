@@ -4,8 +4,7 @@ from discord.ext import commands, tasks
 from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
 
-import puurrtybot.database.update as du
-import puurrtybot.database.query as dq
+from puurrtybot.database import query as dq, update as du
 import puurrtybot.helper.functions as hf
 import puurrtybot.api.twitter as twitter
 
@@ -41,7 +40,7 @@ class TwitterVerify:
 
 
 class TwitterVerifier(commands.Cog):
-    def __init__(self, client):
+    def __init__(self, client: commands.bot.Bot):
         self.client = client
         self._tasks = {} 
         self.task_n = 0
@@ -49,7 +48,7 @@ class TwitterVerifier(commands.Cog):
         self.ctx_id = {}
         self.verification = {}
 
-    async def static_loop(self, user_id, count):
+    async def static_loop(self, user_id: int, count: int):
         print('verify started')
         ctx = self.ctx_id[user_id]
         self.counter[user_id] += 1
@@ -84,7 +83,7 @@ class TwitterVerifier(commands.Cog):
                             option_type = 3)
                    ]
                       )
-    async def verify_task(self, ctx:SlashContext, twitter_handle:str):
+    async def verify_task(self, ctx: SlashContext, twitter_handle: str):
         user_id = ctx.author_id
         try:    
             self._tasks[user_id].cancel()
@@ -104,5 +103,5 @@ class TwitterVerifier(commands.Cog):
             self.task_launcher(user_id, seconds=60*5, count=12)
 
 
-def setup(client):
+def setup(client: commands.bot.Bot):
     client.add_cog(TwitterVerifier(client))

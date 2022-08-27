@@ -1,14 +1,15 @@
-import asyncio
+import asyncio, random, datetime, json
 
 from discord.ext import commands
-import discord, random
-import puurrtybot, datetime, json
+import discord
 from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option, create_choice
+
+from puurrtybot import PATH
 import puurrtybot.api.twitter as twitter
 import puurrtybot.database.query as dq
 
-SNAPSHOTS_DIR = f"""{puurrtybot.PATH}/puurrtybot/data/snapshots"""
+SNAPSHOTS_DIR = f"""{PATH}/puurrtybot/data/snapshots"""
 
 
 class AdminCommands(commands.Cog):
@@ -20,7 +21,7 @@ class AdminCommands(commands.Cog):
 
 
     @commands.command()
-    async def purge(self, ctx, limit: int):
+    async def purge(self, ctx: commands.Context, limit: int):
         if ctx.message.author.id == 642352900357750787:
             await ctx.message.delete()
             await asyncio.sleep(1)
@@ -28,7 +29,7 @@ class AdminCommands(commands.Cog):
 
 
     @commands.command()
-    async def snapshot(self, ctx):
+    async def snapshot(self, ctx: commands.Context):
         if ctx.channel.id == 1002510149929422858:
             self.ctx = ctx
             name = str(datetime.datetime.utcnow()).split(' ')[0]
