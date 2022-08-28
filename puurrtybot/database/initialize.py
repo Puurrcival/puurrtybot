@@ -61,6 +61,7 @@ def initialize_mint_prices(mint_address: str = 'addr1vxk4szdzv6qxqne5k3m0wr4m5ce
         except KeyError:
             mint_matches[asset.asset_id] = mint_block_time
 
+    assets_mint = {}
     for asset, data in mint_matches.items():
         if type(data) != int:
             asset.mint_price = [get_mint_price(d['quantity'][0]) for d in data][-1]
@@ -68,7 +69,7 @@ def initialize_mint_prices(mint_address: str = 'addr1vxk4szdzv6qxqne5k3m0wr4m5ce
         else:
             asset.mint_price = 0
             asset.mint_time = data
-
+    
 
 def initialize_assets():
     for asset in tqdm.tqdm(puurrtybot.ASSETS.values()):

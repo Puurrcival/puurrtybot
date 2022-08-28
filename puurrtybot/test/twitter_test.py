@@ -32,4 +32,4 @@ def test_get_reply_from_to():
 
 
 def test_get_mentions_by_twitter_id():
-    assert type(twitter.get_untracked_mentions_by_twitter_id(TWITTER_ID)['meta']) is dict
+    assert type(twitter.get_untracked_mentions_by_twitter_id(TWITTER_ID)) is list

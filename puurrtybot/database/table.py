@@ -9,12 +9,25 @@ from puurrtybot.pcs import metadata
 @dataclass
 class Table:
     @property
+    def fields(self):
+        return self.__dataclass_fields__
+
+    @property
+    def table(self):
+        return self.__class__
+
+    @property
     def primary_key(self):
         return list(self.__dataclass_fields__)[0]
 
     @property
     def dictionary(self):
-        return {key:getattr(self, key) for key, value in self.__dataclass_fields__.items() if value.repr}
+        return {key:getattr(self, key) for key, value in self.__dataclass_fields__.items() if value.repr and value.init}
+
+
+    @property
+    def data(self):
+        return {key:getattr(self, key) for key, value in self.__dataclass_fields__.items()}
 
 
 @dataclass(order=True)
@@ -28,7 +41,7 @@ class Sale(Table):
     seller_address: str = None
     amount_lovelace: int = None
     market: str = None
-    tracked: bool = None
+    tracked: bool = True
 
 
 @dataclass(order=True)
@@ -99,7 +112,7 @@ class Listing(Table):
     created_at: int = None
     amount_lovelace: int = None
     market: str = None
-    tracked: bool = False  
+    tracked: bool = True  
 
 
 @dataclass(order=True)

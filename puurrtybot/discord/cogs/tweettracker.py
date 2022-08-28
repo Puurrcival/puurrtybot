@@ -21,7 +21,8 @@ class TweetTracker(commands.Cog):
                     if user:
                         amount = 5000
                         await self.channel.send(f"""<@{user.user_id}> got rewarded with {amount} Coins for tweeting:\n https://twitter.com/{tweet.author_id}/status/{tweet.tweet_id}""")
-                        du.update_balance_by_user_id(user.user_id, amount)                
+                        user.balance += amount
+                        du.update_object(user)                
                     else:
                         await self.channel.send(f"""https://twitter.com/{tweet.author_id}/status/{tweet.tweet_id}""")
                 print("tracked tweet")

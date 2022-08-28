@@ -5,7 +5,7 @@ import puurrtybot.api.blockfrost as blockfrost
 
 @sql_insert
 def insert_object(sql_object) -> None:
-    return sql_object
+    return sql_object.__class__(**sql_object.dictionary)
 
 
 def new_user(user_id, username):
@@ -27,7 +27,7 @@ def new_sale(tx_hash, asset_id, timestamp, amount, tracked = True):
 
 
 def new_listing(listing_id, asset_id, timestamp, amount, tracked = True):
-    insert_object(Listing(listing_id = listing_id, asset_id = asset_id, timestamp = timestamp, amount = amount, tracked = tracked))
+    insert_object(Listing(listing_id = listing_id, asset_id = asset_id, created_at = timestamp, amount = amount, tracked = tracked))
 
 
 def new_tweet(tweet_id, author_id, in_reply_to_user_id = None, tracked = True):

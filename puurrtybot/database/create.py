@@ -1,9 +1,12 @@
 """A module to create the sqlite .db"""
+from contextlib import contextmanager
 from datetime import datetime
+from functools import wraps
+import inspect
 
 from pycardano import AddressType
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Table, create_engine, Enum
-from sqlalchemy.orm import relationship, sessionmaker, registry
+from sqlalchemy.orm import relationship, sessionmaker, registry, scoped_session
 
 import puurrtybot.database.table as table
 from puurrtybot.pcs import metadata
@@ -16,7 +19,8 @@ Base = mapper_registry.generate_base()
 
 engine = create_engine(f"""sqlite:///{DATABASES_DIR}/pcs.db""")
 
-Session = sessionmaker()
+session_factory = sessionmaker(bind=engine,autocommit=False, autoflush=False)
+SESSION = scoped_session(session_factory)
          
 
 @mapper_registry.mapped
@@ -163,12 +167,19 @@ class User(table.User):
 Base.metadata.create_all(engine)
 
 
-session = Session(bind=engine)
+@contextmanager
+def session_scope():
+    session = SESSION()
+    try:
+        yield session
+    finally:
+        session.expunge_all()
+        session.close()
 
 
 def sql_insert(sql_function):
     def wrapper(*args, **kwargs):
-        with Session(bind=engine) as session:
+        with session_scope() as session:
             result = sql_function(*args, **kwargs)
             if type(result) is list:
                 session.add_all(result)
@@ -179,15 +190,29 @@ def sql_insert(sql_function):
 
 
 def sql_query(sql_function):
+    sig = inspect.signature(sql_function)
+    @wraps(sql_function)
     def wrapper(*args, **kwargs):
-        kwargs['session'] = Session(bind=engine)
-        return sql_function(*args, **kwargs)
+        with session_scope() as session:
+            bound = sig.bind(*args, **kwargs)
+            bound.apply_defaults()
+            kwargs['session'] = session
+            result = sql_function(*args, **kwargs)
+            try:
+                if result and type(result) is not int and bound.arguments.get('detach'):
+                    if type(result) is list:
+                        return [row.table(**row.dictionary) for row in result]
+                    else:
+                        return result.table(**result.dictionary)
+            except AttributeError:
+                pass
+            return result
     return wrapper
 
 
 def sql_update(sql_function):
     def wrapper(*args, **kwargs):
-        with Session(bind=engine) as session:
+        with session_scope() as session:
             kwargs['session'] = session
             sql_function(*args, **kwargs)
             kwargs['session'].commit()

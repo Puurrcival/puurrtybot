@@ -9,12 +9,18 @@ import puurrtybot.helper.functions as func
 
 
 @sql_update
-def update_object(sql_object: Table, session = None):
-    session.query(
-        sql_object.__class__).filter(
-        getattr(sql_object.__class__, sql_object.primary_key) == getattr(sql_object, sql_object.primary_key)
-        ).update(sql_object.dictionary)
+def update_object(sql_object: Table, session = None) -> None:
+    session.query(  sql_object.__class__).filter(
+                    getattr(sql_object.__class__, sql_object.primary_key) == getattr(sql_object, sql_object.primary_key)
+                    ).update(sql_object.dictionary)
+ 
 
+@sql_update
+def delete_object(sql_object: Table, session = None) -> None:
+    session.query(
+                    sql_object.__class__).filter(
+                    getattr(sql_object.__class__, sql_object.primary_key) == getattr(sql_object, sql_object.primary_key)
+                    ).delete()
 
 @sql_update
 def update_balance_by_user_id(user_id: int, amount: int, session=None):
