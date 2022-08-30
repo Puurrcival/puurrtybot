@@ -32,7 +32,7 @@ class Amount(AssetRole):
 class Family(AssetRole):
     """Discord roles based on family."""
     ANGEL: Role = Role(role_id=1002193337408835605, requirement=(md.Hat.HALO, md.Wings.ANGEL_WINGS,))
-    CRYSTAL: Role = Role(role_id=100219322797525005, requirement=(md.Fur.CRYSTAL,))
+    CRYSTAL: Role = Role(role_id=1002193140452692068, requirement=(md.Fur.CRYSTAL,))
     CYBORG: Role = Role(role_id=1002193140452692068, requirement=(md.Fur.CYBORG,))
     DEVIL: Role = Role(role_id=1002193053576085534, requirement=(md.Hat.DEVIL, md.Eyes.FIRE_EYES, md.Tail.DEVIL_TAIL,))
     EDUCATED: Role = Role(role_id=1002563315509248110, requirement=(md.Prefix_name.PROFESSOR, md.Prefix_name.DR, md.Suffix_name.PHD,))
@@ -63,6 +63,11 @@ class Trait(AssetRole):
     UNIQUE__YES: Role = Role(role_id=1003995578188963901, requirement=(md.Unique.YES,))
     WINGS__ANGEL_WINGS: Role = Role(role_id=1003995148205707314, requirement=(md.Wings.ANGEL_WINGS,))
     FUR__ZOMBIE: Role = Role(role_id=1002939170626482257, requirement=(md.Fur.ZOMBIE,))
+
+
+class Status(Enum):
+    """Discord roles based on status."""
+    VERIFIED: Role = Role(role_id=1001480465259175947, requirement=False)
 
 
 for role_type in [Amount, Family, Trait]:

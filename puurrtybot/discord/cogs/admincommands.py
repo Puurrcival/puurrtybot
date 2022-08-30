@@ -1,9 +1,8 @@
 import asyncio, random, datetime, json
 
-from discord.ext import commands
 import discord
-from discord_slash import SlashContext, cog_ext
-from discord_slash.utils.manage_commands import create_option, create_choice
+from discord import app_commands
+from discord.ext import commands
 
 from puurrtybot import PATH
 import puurrtybot.api.twitter as twitter
@@ -13,25 +12,20 @@ SNAPSHOTS_DIR = f"""{PATH}/puurrtybot/data/snapshots"""
 
 
 class AdminCommands(commands.Cog):
-    def __init__(self, client):
-        self.client = client
-        self.channel = self.client.get_channel(1002510149929422858)
-        self.ctx = None
+    def __init__(self, bot):
+        self.bot = bot
 
-
-
-    @commands.command()
-    async def purge(self, ctx: commands.Context, limit: int):
-        if ctx.message.author.id == 642352900357750787:
-            await ctx.message.delete()
+    @app_commands.command(name = "purge", description = "Delete messages.")
+    async def purge(self, interaction: discord.Interaction, limit: int):
+        if interaction.user.id == 642352900357750787:
+            await interaction.message.delete()
             await asyncio.sleep(1)
-            await ctx.channel.purge(limit=limit)
+            await interaction.channel.purge(limit=limit)
 
 
-    @commands.command()
-    async def snapshot(self, ctx: commands.Context):
-        if ctx.channel.id == 1002510149929422858:
-            self.ctx = ctx
+    @app_commands.command(name = "snapshot", description = "Take a snapshot.")
+    async def snapshot(self, interaction: discord.Interaction,):
+        if interaction.channel.id == 1002510149929422858:
             name = str(datetime.datetime.utcnow()).split(' ')[0]
             snapshot = {}
             for asset in dq.get_asset_all():
@@ -39,79 +33,35 @@ class AdminCommands(commands.Cog):
 
             with open(f"""{SNAPSHOTS_DIR}/snapshot_{name}.json""", 'w') as openfile:
                         json.dump(snapshot, openfile)
-            await self.ctx.send(file=discord.File(f"""{SNAPSHOTS_DIR}/snapshot_{name}.json"""))
+            await interaction.response(file=discord.File(f"""{SNAPSHOTS_DIR}/snapshot_{name}.json"""))
 
-
-    @cog_ext.cog_slash(
-        name = "holder_raffle",
-        description = "holder_raffle",
-        options = [
-            create_option(
-                            name = "raffle_winners",
-                            description = "raffle_winners",
-                            required = True,
-                            option_type = 3,
-                            choices = [create_choice(name = f"{i}", value = f"{i}") for i in range(10) ]),
-                   ]
-                      )
-    async def holder_raffle(self, ctx:SlashContext, raffle_winners: int):
-        if ctx.channel.id == 1002510149929422858:
-            await ctx.send(f"""{ctx.author.mention} used /holder_raffle {raffle_winners}\nLooking for winner(s)...""" )
+    @app_commands.command(name = "holder_raffle", description = "Raffle holders.")
+    @app_commands.choices(raffle_winners = [app_commands.Choice(name = f"{i}", value = f"{i}") for i in range(10) ])
+    async def holder_raffle(self, interaction: discord.Interaction, raffle_winners: str):
+        if interaction.channel_id == 1002510149929422858:
+            await interaction.response.send_message(f"""{interaction.user} used /holder_raffle {raffle_winners}\nLooking for winner(s)...""" )
             assets = [asset for asset in dq.get_asset_all() if asset.address not in ['addr1w999n67e86jn6xal07pzxtrmqynspgx0fwmcmpua4wc6yzsxpljz3', 'addr1zxj47sy4qxlktqzmkrw8dahe46gtv8seakrshsqz26qnvzypw288a4x0xf8pxgcntelxmyclq83s0ykeehchz2wtspksr3q9nx']]
             content = '\n'.join([winner.address for winner in random.sample(assets, int(raffle_winners))])
-            await self.client.get_channel(1002510149929422858).send(content)
+            await interaction.response.send_message(content)
 
 
-    @cog_ext.cog_slash(
-        name = "twitter_raffle",
-        description = "twitter_raffle",
-        options = [
-            create_option(
-                            name = "tweet_id",
-                            description = "tweet_id",
-                            required = True,
-                            option_type = 3),
-            create_option(
-                            name = "tweet_like",
-                            description = "tweet_like",
-                            required = True,
-                            option_type = 3,
-                            choices = [create_choice(name = "True", value = "True"), create_choice(name = "False", value = "False") ]),
-            create_option(
-                            name = "tweet_retweet",
-                            description = "tweet_retweet",
-                            required = True,
-                            option_type = 3,
-                            choices = [create_choice(name = "True", value = "True"), create_choice(name = "False", value = "False") ]),
-            create_option(
-                            name = "tweet_mentions",
-                            description = "tweet_mentions",
-                            required = True,
-                            option_type = 3,
-                            choices = [create_choice(name = f"{i}", value = f"{i}") for i in range(10) ]),
-            create_option(
-                            name = "raffle_winners",
-                            description = "raffle_winners",
-                            required = True,
-                            option_type = 3,
-                            choices = [create_choice(name = f"{i}", value = f"{i}") for i in range(10) ]),
-                   ]
-                      )
-    async def twitter_raffle(self, ctx:SlashContext, tweet_id: str, tweet_like: bool, tweet_retweet: bool, tweet_mentions: int, raffle_winners: int):
-        if ctx.channel.id == 1002510149929422858:
-            if tweet_like == "True":
-                tweet_like = True
-            else:
-                tweet_like = False
-            if tweet_retweet == "True":
-                tweet_retweet = True
-            else:
-                tweet_retweet = False
+    @app_commands.describe(name = "twitter_raffle",temp = "value")
+    @app_commands.choices(  tweet_like = [app_commands.Choice(name = name, value = value) for name, value in [("True", "True"), ("False", "False")]],
+                            tweet_retweet = [app_commands.Choice(name = name, value = value) for name, value in [("True", "True"), ("False", "False")]],
+                            tweeet_mentions = [app_commands.Choice(name = f"{i}", value = f"{i}") for i in range(10)],
+                            raffle_winners = [app_commands.Choice(name = f"{i}", value = f"{i}") for i in range(10)]
+                        )
+    async def twitter_raffle(self,  interaction: discord.Interaction, tweet_id: str, tweet_like: bool, tweet_retweet: bool, tweet_mentions: int, raffle_winners: int):
+        if interaction.channel.id == 1002510149929422858:
+            if tweet_like == "True": tweet_like = True
+            else: tweet_like = False
+            if tweet_retweet == "True": tweet_retweet = True
+            else: tweet_retweet = False
             winners = twitter.twitter_raffle(tweet_id = tweet_id, raffle = int(raffle_winners), minimum_mention = int(tweet_mentions), tweet_retweet = tweet_retweet, tweet_like = tweet_like)
             winners = [f"""https://twitter.com/{winner}""" for winner in winners]
             content = '\n'.join(winners)
-            await self.client.get_channel(1002510149929422858).send(content)
+            await interaction.response.send_message(content)
 
 
-def setup(client):
-    client.add_cog(AdminCommands(client))
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(AdminCommands(bot), guilds = [discord.Object(id = 998148160243384321)])

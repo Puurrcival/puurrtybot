@@ -1,13 +1,15 @@
 import random, datetime
 
+import discord
+from discord import app_commands
 from discord.ext import commands, tasks
-from discord_slash import SlashContext, cog_ext
-from discord_slash.utils.manage_commands import create_option
 
 from puurrtybot.helper import functions as hf
 from puurrtybot.api import blockfrost
 from puurrtybot.database import query as dq, insert as di
+from puurrtybot.database.create import Address
 from puurrtybot.discord.cogs.updatemanager import update_role_all_by_user
+from puurrtybot.database.create import User
 
 HIDDEN_STATUS = True
 
@@ -52,7 +54,7 @@ class WalletVerifier(commands.Cog):
             print(f"""verified {userid} {wallet}""")
             await ctx.send(f"""<@{userid}>, transaction found, your address is now verified: {wallet}""", hidden=HIDDEN_STATUS)
             di.new_address(address = wallet, user_id = userid)
-            await update_role_all_by_user(dq.get_user_by_user_id(userid))
+            await update_role_all_by_user(dq.fetch_row(User(userid)))
             self._tasks[userid].cancel()
         else:
             print(f"""not verified {userid} {wallet}""")
@@ -70,41 +72,29 @@ class WalletVerifier(commands.Cog):
         self._tasks[userid] = new_task
         self.counter[userid] = 1
         
-    @cog_ext.cog_slash(
-        name = "verify_wallet",
-        description = "verify_wallet",
-        options = [
-            create_option(
-                            name="wallet",
-                            description="wallet address",
-                            required=True,
-                            option_type=3)
-                   ]
-                      )
-    async def verify_task(self, ctx: SlashContext, wallet: str):
+    @app_commands.command(name = "verify_wallet", description = "Verify wallet.")
+    async def verify_twitter(self, interaction: discord.Interaction, *, wallet: str):
         print(wallet)
-        userid = ctx.author_id
+        address = Address(address = blockfrost.get_address_by_adahandle(wallet),user_id=interaction.user.id)
         try:    
-            self._tasks[userid].cancel()
+            self._tasks[address.user_id].cancel()
         except KeyError:
             pass
-        address = wallet.strip()
-        address = blockfrost.get_address_by_adahandle(address)
 
-        if dq.get_address_by_address(address):
-            await ctx.send(f"""{ctx.author.mention}, this address has been verified already: {address}""", hidden=HIDDEN_STATUS)
-        elif not blockfrost.valid_address(address):
-            await ctx.send(f"""{ctx.author.mention}, the entered address **{address}** **doesn't exist**. Please check the spelling and try again.""", hidden=HIDDEN_STATUS)
+        if dq.fetch_row_by_value(address, column=address.column.user_id, value=address.userid, all=True):
+            await interaction.response.send_message(f"""{interaction.user.mention}, this address has been verified already: {address.address}""", hidden=HIDDEN_STATUS)
+        elif not blockfrost.valid_address(address.address):
+            await interaction.response.send_message(f"""{interaction.user.mention}, the entered address **{address.address}** **doesn't exist**. Please check the spelling and try again.""", hidden=HIDDEN_STATUS)
         else:
-            self.verification[userid] = WalletVerify(userid = userid, address = address)
-            self.ctx_id[userid] = ctx
+            self.verification[address.userid] = WalletVerify(userid = address.userid, address = address.address)
+            self.ctx_id[address.userid] = interaction
 
-            amount = str(self.verification[userid].amount)
+            amount = str(self.verification[address.userid].amount)
             amount_formatted = f"""{amount[:1]}.{amount[1:]}"""
 
-            await ctx.send(f"""**Verify a new address** \n\n⌛ Please send **{amount_formatted}₳** to your own address at **{address}** within the next 60 minutes.\n\n⚠ Make sure to send from (and to) the wallet that owns this address. In case of error your fees will not be reimbursed by the operator of this Discord server.\n\n💡 If you close Discord, you can use /verify list to get your verification data later.""", hidden=HIDDEN_STATUS)
-            self.task_launcher(userid, seconds=60*5, count=12)
+            await interaction.response.send_message(f"""**Verify a new address** \n\n⌛ Please send **{amount_formatted}₳** to your own address at **{address.address}** within the next 60 minutes.\n\n⚠ Make sure to send from (and to) the wallet that owns this address. In case of error your fees will not be reimbursed by the operator of this Discord server.\n\n💡 If you close Discord, you can use /verify list to get your verification data later.""", hidden=HIDDEN_STATUS)
+            self.task_launcher(address.userid, seconds=60*5, count=12)
     
 
-def setup(client: commands.bot.Bot):
-    client.add_cog(WalletVerifier(client))
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(WalletVerifier(bot), guilds = [discord.Object(id = 998148160243384321)])

@@ -22,14 +22,10 @@ def delete_object(sql_object: Table, session = None) -> None:
                     getattr(sql_object.__class__, sql_object.primary_key) == getattr(sql_object, sql_object.primary_key)
                     ).delete()
 
-@sql_update
-def update_balance_by_user_id(user_id: int, amount: int, session=None):
-    session.query(User).filter(User.user_id == user_id).update({'balance': User.balance + amount})
 
-
-@sql_update
-def update_twitter_by_user_id(user_id, twitter_id, twitter_handle, session=None):
-    session.query(User).filter(User.user_id == user_id).update({'twitter_id': twitter_id, 'twitter_handle': twitter_handle})
+#@sql_update
+#def update_twitter_by_user_id(user_id, twitter_id, twitter_handle, session=None):
+#    session.query(User).filter(User.user_id == user_id).update({'twitter_id': twitter_id, 'twitter_handle': twitter_handle})
 
 
 @sql_update

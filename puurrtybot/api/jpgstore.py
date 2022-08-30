@@ -66,7 +66,7 @@ def get_sales_untracked(policy_id: str) -> List[Sale]:
         sales = get_sales(policy_id, count)
         count+=50
         for sale in sales:
-            if dq.get_sale_by_tx_hash(sale.tx_hash):
+            if dq.fetch_row(sale):
                 count = None
                 break
             else:
@@ -91,7 +91,7 @@ def get_listings_untracked(policy_id: str) -> List[Listing]:
         listings = get_listings(policy_id, count)
         count+=50
         for listing in listings:
-            if dq.get_listing_by_id(listing.listing_id):
+            if dq.fetch_row(listing):
                 count = None
                 break
             else:

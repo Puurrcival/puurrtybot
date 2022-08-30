@@ -49,6 +49,10 @@ class AssetProfile:
     def embed(self) -> Tuple[Embed, List[File]]:
         return create_embed(self)    
 
+    @property
+    def embed_short(self) -> Tuple[Embed, List[File]]:
+        return create_embed(self, saleplot=False)
+
     def __post_init__(self):
         asset_data = dq.get_asset_by_asset_id(self.asset_id)
         self.sale_history = sale_history = dq.get_sale_history(self.asset_id)
@@ -83,7 +87,7 @@ def get_asset_sale_history_plot(sale_history: List[Sale]) -> BytesIO:
     return stream
 
 
-def create_embed(asset: AssetProfile) -> Tuple[Embed, List[File]]:
+def create_embed(asset: AssetProfile, saleplot: bool = True) -> Tuple[Embed, List[File]]:
         image_files: List[File] = []
         embed: Embed = Embed(  title=f"""**{asset.asset_name}**""",
                         url=f"""https://www.jpg.store/asset/{asset.asset_id}""",
@@ -99,7 +103,7 @@ def create_embed(asset: AssetProfile) -> Tuple[Embed, List[File]]:
         embed.add_field(name="Highest", value=f"""{asset.sale_highest} ₳""", inline=True)
         embed.add_field(name="Volume", value=f"""{asset.sale_volume} ₳""", inline=True)
         embed.set_footer(text="")
-        if asset.amount_traded > 1:
+        if saleplot and asset.amount_traded > 1:
             image_files.append(File(asset.sale_plot, filename="sale_plot.png"))
             embed.add_field(name=f"""\u200b""", value=f"""**Sale History**""", inline=False) 
             embed.set_image(url="attachment://sale_plot.png")

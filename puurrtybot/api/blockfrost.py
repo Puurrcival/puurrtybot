@@ -138,6 +138,7 @@ def get_tx_by_tx_hash(tx_hash: str) -> dict:
 
 def get_address_by_adahandle(adahandle: str) -> str:
     """Get the Cardano address of an adahandle, see https://docs.adahandle.com/."""
+    adahandle = adahandle.strip()
     if not valid_address(adahandle):
         adahandle = adahandle.strip('$')
         adahandle_policyID = "f0ff48bbb7bbe9d59a40f1ce90e9e9d0ff5002ec48f232b49ca0fb9a"

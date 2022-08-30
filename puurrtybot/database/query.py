@@ -2,18 +2,32 @@ from typing import List, Union, Type
 
 from sqlalchemy import or_, and_
 from sqlalchemy.orm.session import Session
+from sqlalchemy.orm.attributes import InstrumentedAttribute
 
 from puurrtybot.database.create import Listing, User, Address, Asset, Role, Sale, Tweet, sql_query
 from puurrtybot.database.table import Table
 from puurrtybot.pcs.metadata import Trait
-from puurrtybot.pcs.role import AssetRole, Amount
+from puurrtybot.pcs.role import AssetRole, Amount, Family
 
 
 """Universal queries."""
 @sql_query
-def fetch_row(row: Table, detach: bool = True, session: Session = None) -> Table:
+def fetch_row_by_value(row: Table, column: Union[str, InstrumentedAttribute], value, all = False, detach: bool = True, session: Session = None) -> List[Table]:
+    """Fetch a row by a value in a column."""
+    table = row if isinstance(row.table, property) else row.table
+    column = column if type(column) is InstrumentedAttribute else getattr(table, column)
+    session = session.query(table).filter(column == value)
+    return session.all() if all else session.first()
+
+#print(fetch_row_by_value(Address, Address.user_id, value=642352900357750787, all=True))
+
+
+def fetch_row(row: Table) -> Table:
     """Fetch a row by primary key."""
-    return session.query(row.table).filter(getattr(row.table, row.primary_key) == getattr(row, row.primary_key)).first()
+    return fetch_row_by_value(row, row.primary_key, getattr(row, row.primary_key))
+
+
+#print(fetch_row(Sale(tx_hash='28e279c1b615dea082f4fdc9c430c325a239bca004152b39116bb6bd1993de3c')))
 
 
 @sql_query
@@ -24,39 +38,9 @@ def fetch_table(table: Type[Table], detach: bool = True, session: Session = None
 
 """User queries."""
 @sql_query
-def get_user_all(session=None) -> List[User]:
-    """Get all user data."""
-    return session.query(User).all()
-    
-
-@sql_query
-def get_user_by_user_id(user_id: int, detach: bool = True, session: Session = None) -> User:
-    """Get user data by user_id."""
-    return session.query(User).filter(User.user_id == user_id).first()
-#print(get_user_by_user_id(user_id = 642352900357750787))
-
-@sql_query
-def get_user_by_twitter_id(twitter_id: int, detach: bool = True, session: Session = None) -> User:
-    """Get user data by twitter_id."""
-    return session.query(User).filter(User.twitter_id == twitter_id).first()
-
-
-@sql_query
 def get_user_by_asset_id(asset_id: str, detach: bool = True, session: Session = None) -> User:
     """Get user data by asset_id."""
     return session.query(User).filter(Asset.asset_id == asset_id).filter(Asset.address == Address.address).filter(Address.user_id == User.user_id).first()
-
-
-"""Address queries"""
-@sql_query
-def get_address_by_address(address: str, detach: bool = True, session: Session = None) -> Address:
-    """Get address data by address."""
-    return session.query(Address).filter(Address.address == address).first()
-
-
-@sql_query
-def get_address_by_user_id(user_id: int, detach: bool = True, session: Session = None) -> List[Address]:
-    return session.query(Address).filter(Address.user_id == user_id)
 
 
 """Asset queries."""
@@ -100,12 +84,6 @@ def get_tweet_by_tweet_id(tweet_id: int, detach: bool = True, session: Session =
 
 """Sale queries"""
 @sql_query
-def get_sale_by_tx_hash(tx_hash: str, detach: bool = True, session: Session = None) -> Sale:
-    """Get sale data by tx_hash."""
-    return session.query(Sale).filter(Sale.tx_hash == tx_hash).first()
-
-
-@sql_query
 def get_sale_history(asset_id: str, detach: bool = True, session: Session = None) -> List[Sale]:
     """Get sale data of an asset by asset_id."""
     sales = session.query(Sale).filter(Sale.asset_id == asset_id).filter(Sale.tracked == True).all()
@@ -114,12 +92,6 @@ def get_sale_history(asset_id: str, detach: bool = True, session: Session = None
 
 
 """Listing queries."""
-@sql_query
-def get_listing_by_id(listing_id, detach: bool = True, session: Session = None) -> Sale:
-    """Get data of listing by listing_id."""
-    return session.query(Listing).filter(Listing.listing_id == listing_id).first()
-
-
 @sql_query
 def get_listings(tracked: bool = True, detach: bool = True, session: Session = None) -> List[Listing]:
     """Get data of all listings, latest first."""
@@ -155,9 +127,9 @@ def get_role_by_user_id(user_id: int, detach: bool = True, session: Session = No
 
 
 @sql_query
-def get_amount_of_assets_for_role(role_id: int, user_id: int, detach: bool = True, session: Session = None) -> bool:
+def check_role_requirement(role_id: int, user_id: int, detach: bool = True, session: Session = None) -> bool:
     """Get amount of assets that qualify for a role."""
-    return session.query(Role).filter(and_(Role.role_id == role_id, Role.user_id == user_id, Role.requirement)).first().requirement
+    return True if session.query(Role).filter(and_(Role.role_id == role_id, Role.user_id == user_id, Role.requirement)).first() else False
 
 
 """Query Traits."""

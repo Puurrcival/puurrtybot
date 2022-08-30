@@ -1,10 +1,23 @@
+from ast import Add
 from dataclasses import dataclass, field
 from typing import List, Optional, Union
+import inspect
 
 from pycardano import AddressType
 
 from puurrtybot.pcs import metadata
+from puurrtybot.api import blockfrost
     
+
+class VarName:
+    def __init__(self, string_list: List[str]):
+        for name in string_list:
+            setattr(self, name, name)
+
+class Attr:
+    def __init__(self, row, string_list: List[str]):
+        for name in string_list:
+            setattr(self, name, getattr(row.table, name, None))
 
 @dataclass
 class Table:
@@ -18,16 +31,25 @@ class Table:
 
     @property
     def primary_key(self):
-        return list(self.__dataclass_fields__)[0]
-
-    @property
-    def dictionary(self):
-        return {key:getattr(self, key) for key, value in self.__dataclass_fields__.items() if value.repr and value.init}
-
+        return list(self.fields)[0]
 
     @property
     def data(self):
-        return {key:getattr(self, key) for key, value in self.__dataclass_fields__.items()}
+        return {key:getattr(self, key) for key, value in self.fields.items() if value.repr}
+
+    @property
+    def dictionary(self):
+        return {key:getattr(self, key) for key, value in self.fields.items() if value.repr and value.init}
+
+    @property
+    def column(self) -> VarName:
+        fieldname = f'{inspect.stack()[0][3]}'
+        prop = [prop for prop in dir(self) if prop!=fieldname and isinstance(getattr(self.table, prop, None), property)]
+        return VarName(prop + list(vars(self)))
+
+    @property
+    def attr(self) -> int:
+        return Attr(self, list(vars(self.column)))
 
 
 @dataclass(order=True)
@@ -95,6 +117,7 @@ class Asset(Table):
         self.first_name = metadata.First_name(self.first_name)
         self.last_name = metadata.Last_name(self.last_name)
         self.suffix_name = metadata.Suffix_name(self.suffix_name)
+        self.stake_address = blockfrost.get_stake_address_by_address(self.address) if not self.stake_address else self.stake_address
 
 
 @dataclass(order=True)
@@ -139,7 +162,7 @@ class Tweet(Table):
 @dataclass(order=True)
 class User(Table):
     user_id: int = None
-    balance: int = None
+    balance: int = 0
     username: str = None
     twitter_id: int = None
     twitter_handle: str = None

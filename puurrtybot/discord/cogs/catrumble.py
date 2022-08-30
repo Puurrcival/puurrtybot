@@ -1,9 +1,11 @@
 from dataclasses import dataclass
 from typing import List
+import random
 
+import discord
 from discord.ext import commands
 
-import puurrtybot, discord, random
+import puurrtybot
 from puurrtybot.database import query as dq, update as du
 from puurrtybot.pcs import metadata as md
 
@@ -28,8 +30,8 @@ class PartyUser:
 
 
 class CatRumble(commands.Cog):
-    def __init__(self, client: commands.bot.Bot):
-        self.client = client
+    def __init__(self, bot: commands.bot.Bot):
+        self.bot = bot
 
     async def static_loop(self):
         print('CatRumble running')
@@ -131,7 +133,7 @@ class CatRumble(commands.Cog):
         text = f"""Winner of the Party: <@{ranking[0].user_id}> !!!\n\n"""
         for ix, user in enumerate(ranking):
             text += f"""{ix+1}. <@{user.user_id}> winning {user.balance} Coins.\n"""
-            du.update_balance_by_user_id(user.user_id, user.balance)
+            du.xxxxx(user.user_id, user.balance)
         embed2=discord.Embed(title=f"""__Party Ended__""", description=text, color=0x109319)  
         await channel.send(embed=embed2)
 
@@ -143,5 +145,5 @@ class CatRumble(commands.Cog):
         pass
 
 
-def setup(client: commands.bot.Bot):
-    client.add_cog(CatRumble(client))
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(CatRumble(bot), guilds = [discord.Object(id = 998148160243384321)])

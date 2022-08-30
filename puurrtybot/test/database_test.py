@@ -13,7 +13,7 @@ def test_database():
     assert not query.fetch_row(test_asset)
 
     # test object exists
-    insert.insert_object(test_asset)
+    insert.insert_row(test_asset)
     assert query.fetch_row(test_asset) is not None
 
     assert test_asset == query.fetch_row(test_asset)
