@@ -1,5 +1,6 @@
 import random
 import datetime
+import asyncio
 
 import discord
 from discord import app_commands
@@ -10,7 +11,7 @@ from puurrtybot.database.create import User
 import puurrtybot.helper.functions as hf
 import puurrtybot.api.twitter as twitter
 
-HIDDEN_STATUS = True
+
 VERIFY_TWEET_ID = '1549207713594343425'
 VERIFY_CONVERSATION_ID = twitter.get_conversation_id_by_tweet_id(VERIFY_TWEET_ID)
 
@@ -47,29 +48,29 @@ class TwitterVerifier(commands.Cog):
         self._tasks = {} 
         self.task_n = 0
         self.counter = {}
-        self.ctx_id = {}
+        self.interaction = {}
         self.verification = {}
 
     async def static_loop(self, user_id: int, count: int):
         print('verify started')
-        interaction: discord.Interaction = self.ctx_id[user_id]
+        interaction: discord.Interaction = self.interaction[user_id]
         self.counter[user_id] += 1
         check = self.verification[user_id].verify_twitter()
         twitter_handle = self.verification[user_id].twitter_handle
         if check:
-            await interaction.response.send(f"""<@{user_id}>, reply found, your twitter account is now verified: {twitter_handle}""", hidden=HIDDEN_STATUS)
+            await interaction.followup.send(f"""<@{user_id}>, reply found, your twitter account is now verified: {twitter_handle}""", ephemeral = True)
             user: User = dq.fetch_row(User(user_id))
             user.twitter_id = self.verification[user_id].twitter_id
             user.twitter_handle = self.verification[user_id].twitter_handle
             du.update_object(user)
             self._tasks[user_id].cancel()
         elif self.counter[user_id] > count:
-            await interaction.send(f"""<@{user_id}>, verifying time exceeded.""", hidden=HIDDEN_STATUS)
+            await interaction.followup.send(f"""<@{user_id}>, verifying time exceeded.""", ephemeral = True)
             print('time exceeded')
         else:
             print(f"""not verified {user_id} {twitter_handle}""")
-            await interaction.send(f"""... still looking for reply. \n Next check for reply <t:{int(datetime.datetime.now().timestamp())+60*5}:R>.""", hidden=HIDDEN_STATUS)
-            self.ctx_id[user_id] = interaction
+            await interaction.followup.send(f"""... still looking for reply. \n Next check for reply <t:{int(datetime.datetime.now().timestamp())+60*5}:R>.""", ephemeral = True)
+            self.interaction[user_id] = interaction
 
     def task_launcher(self, user_id, seconds, count):
         new_task = tasks.loop(seconds = seconds, count = count)(self.static_loop)
@@ -79,7 +80,7 @@ class TwitterVerifier(commands.Cog):
 
 
     @app_commands.command(name = "verify_twitter", description = "Verify twitter.")
-    async def verify_twitter(self, interaction: discord.Interaction, *, text: str):
+    async def verify_twitter(self, interaction: discord.Interaction, *, twitter_handle: str):
         user_id = interaction.user.id
         try:    
             self._tasks[user_id].cancel()
@@ -88,14 +89,15 @@ class TwitterVerifier(commands.Cog):
         twitter_handle = twitter_handle.strip('@')
         twitter_id = twitter.get_twitter_id_by_username(twitter_handle)
 
-        if dq.fetch_row(User(user_id)).twitter_id:
-            await interaction.response.send_message(f"""{interaction.user.mention}, {twitter_handle} already verified""", hidden=HIDDEN_STATUS)
+        if dq.fetch_row(User(user_id)).twitter_id == twitter_id:
+            await interaction.response.send_message(f"""{interaction.user.mention}, {twitter_handle} already verified""", ephemeral = True)
         elif not twitter_id:
-             await interaction.response.send_message(f"""{interaction.user.mention}, the entered twitter name **{twitter_handle}** **doesn't exist**. Please check the spelling and try again.""", hidden=HIDDEN_STATUS)        
+             await interaction.response.send_message(f"""{interaction.user.mention}, the entered twitter name **{twitter_handle}** **doesn't exist**. Please check the spelling and try again.""", ephemeral = True)        
         else:
             self.verification[user_id] = TwitterVerify(user_id = user_id, twitter_handle = twitter_handle, twitter_id = twitter_id)
-            await interaction.response.send_message(f"""**Verify a new twitter account** \n\n⌛ Please reply with **{self.verification[user_id].amount}** to https://twitter.com/PuurrtyBot/status/1549207713594343425 from **{twitter_handle}** within the next 60 minutes.""", hidden=HIDDEN_STATUS)
-            self.ctx_id[user_id] = interaction
+            await interaction.response.send_message(f"""**Verify a new twitter account** \n\n⌛ Please reply with **{self.verification[user_id].amount}** to https://twitter.com/PuurrtyBot/status/1549207713594343425 from **{twitter_handle}** within the next 60 minutes.\n\nWill check every 5 minutes.""", ephemeral = True)
+            await asyncio.sleep(5*60)
+            self.interaction[user_id] = interaction
             self.task_launcher(user_id, seconds=60*5, count=12)
 
 

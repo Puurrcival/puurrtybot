@@ -1,21 +1,22 @@
-from discord.ext import commands, tasks
 import discord
+from discord import app_commands
+from discord.ext import commands, tasks
 
-from puurrtybot.helper import image_handle
-from puurrtybot.database import insert as di, query as dq
-from puurrtybot.database.create import User
-from puurrtybot.discord.cogs.updatemanager import update_role_all_by_user
-from discord.ui import Button, View
-
+from puurrtybot.discord.button import button_view
 
 PUURRDO_ANSWER = {}
-
 
 
 class MemberVerifier(commands.Cog):
     def __init__(self, bot: commands.bot.Bot):
         self.bot = bot
 
+    @app_commands.command(name = "test",description = "Create Button.")
+    @commands.has_permissions(administrator = True)
+    async def launch_button1(self, interaction: discord.Interaction): 
+        await interaction.response.send_message(view = button_view())
+
+    
     #@commands.Cog.listener()
     #async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
     #    if payload.channel_id == 998148162277625918 and payload.message_id == 1013945235446968362 and str(payload.emoji) == "🔎":
@@ -39,7 +40,7 @@ class MemberVerifier(commands.Cog):
             
     #         embed.set_thumbnail(url=f"""attachment://thumbnail.png""")
     #         embed.set_image(url=f"""attachment://puurrdo.png""")
-    #         await ctx.send(embed = embed, files = image_files, hidden=True)
+    #         await ctx.send(embed = embed, files = image_files, ephemeral=True)
 
     # @cog_ext.cog_slash(
     # name = "verify_solve",

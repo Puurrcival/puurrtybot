@@ -30,9 +30,14 @@ BLOCKFROST_STATUS_CODES = {
     500: """Our endpoints are having a problem."""}
 
 
+class BlockfrostException404(Exception):
+    """ my custom exception class """
+
+
 def query(query_string: str) -> Response:
     """Query blockfrost.io and check for valid response."""
     response = requests.get(f"""{NETWORK}{query_string}""", headers=HEADERS)
+    if response.status_code == 404: raise BlockfrostException404("""The resource doesn't exist.""")
     if response.status_code != 200:
         raise Exception( (response.status_code, BLOCKFROST_STATUS_CODES[response.status_code]) )
     return response
@@ -143,5 +148,8 @@ def get_address_by_adahandle(adahandle: str) -> str:
         adahandle = adahandle.strip('$')
         adahandle_policyID = "f0ff48bbb7bbe9d59a40f1ce90e9e9d0ff5002ec48f232b49ca0fb9a"
         asset = f"""{adahandle_policyID}{binascii.hexlify(bytes(adahandle, 'utf-8')).decode('utf-8')}"""
-        adahandle = get_address_by_asset(asset)
+        try:
+            adahandle = get_address_by_asset(asset)
+        except BlockfrostException404:
+            return None
     return adahandle

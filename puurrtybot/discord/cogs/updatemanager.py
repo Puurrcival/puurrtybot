@@ -72,6 +72,7 @@ class UpdateManager(commands.Cog):
         print('UpdateManager running')
         if dq.get_asset_all(hf.get_utc_time()-4*60*60):
             await asyncio.to_thread(update_asset_all)
+            print("""Update Roles""")
             for user in tqdm.tqdm(dq.fetch_table(User)):
                 """Update Roles.""" 
                 await update_user(user)
