@@ -14,6 +14,9 @@ import puurrtybot.database.query as dq
 HEADERS = {"Authorization": "Bearer {}".format(TWITTER_BEARER_TOKEN)}
 NETWORK = 'https://api.twitter.com/2'
 
+class TwitterException400(Exception):
+    """ my custom exception class """
+
 
 TWITTER_STATUS_CODES = { 
     # https://developer.twitter.com/en/support/twitter-api/error-troubleshooting
@@ -35,6 +38,7 @@ TWITTER_STATUS_CODES = {
 def query(query_string: str) -> Response:
     """Query twitter api and check for valid response."""
     response = requests.get(f"""{NETWORK}{query_string}""", headers=HEADERS)
+    if response.status_code == 404: raise TwitterException400("""Bad Request.""")
     if response.status_code != 200:
         raise Exception( (response.status_code, f"""{TWITTER_STATUS_CODES[response.status_code]}""") )
     return response
@@ -55,7 +59,7 @@ def map_tweet(tweet):
 def get_twitter_id_by_username(name: str) -> int:
     try:
         return int(query(f"""/users/by/username/{name.strip('@')}""").json()['data']['id'])
-    except KeyError:
+    except (KeyError, TwitterException400): 
         return None
 
 

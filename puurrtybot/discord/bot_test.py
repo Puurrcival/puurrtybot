@@ -6,7 +6,8 @@ from discord.ext import commands
 
 import puurrtybot
 from puurrtybot.helper import fuzzy_search, asset_profile
-from puurrtybot.discord.button import button_view
+from puurrtybot.discord import button
+from puurrtybot.discord.embed import RULES_EMBED
 
 GUILD_ID = 998148160243384321
 ROLE_ID = 1003995806434603059
@@ -29,18 +30,26 @@ class Bot(commands.Bot):
             await self.load_extension(ext)
 
         await self.tree.sync(guild = discord.Object(id = GUILD_ID))
-        self.add_view(button_view())
+        self.add_view(button.button_verify_member())
+        self.add_view(button.button_verify())
 
     async def on_ready(self):
         puurrtybot.GUILD = self.get_guild(puurrtybot.GUILD)
         puurrtybot.DISCORD_ROLES = {role.id:role for role in puurrtybot.GUILD.roles}
         print(f"Logged in as {self.user}.")
 
-    async def on_command_error(self, ctx, error):
-        await ctx.reply(error, ephemeral = True)
+    #async def on_command_error(self, ctx, error):
+    #    await ctx.reply(error, ephemeral = True)
     
 
 bot = Bot() 
+
+
+@bot.hybrid_command(name = "create_button", with_app_command = True, description = "Testing")
+@app_commands.guilds(discord.Object(id = GUILD_ID))
+@commands.has_permissions(administrator = True)
+async def launch_button1(ctx: commands.Context): 
+    await ctx.send(embed=RULES_EMBED, view = button.button_verify_member())
 
 
 @bot.tree.command(name = "profile", description = "Get information of a cat.")
@@ -57,11 +66,3 @@ async def profile(interaction: discord.Interaction, *, text: str):
 
 
 bot.run(puurrtybot.DISCORD_TOKEN)
-
-
-
-# @bot.hybrid_command(name = "test", with_app_command = True, description = "Testing")
-# @app_commands.guilds(discord.Object(id = GUILD_ID))
-# @commands.has_permissions(administrator = True)
-# async def launch_button1(ctx: commands.Context): 
-#     await ctx.send(view = button_view())

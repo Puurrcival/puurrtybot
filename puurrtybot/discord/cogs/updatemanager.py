@@ -70,7 +70,7 @@ class UpdateManager(commands.Cog):
 
     async def static_loop(self):
         print('UpdateManager running')
-        if dq.get_asset_all(hf.get_utc_time()-4*60*60):
+        if dq.get_asset_all(hf.get_utc_time()-24*60*60):
             await asyncio.to_thread(update_asset_all)
             print("""Update Roles""")
             for user in tqdm.tqdm(dq.fetch_table(User)):
@@ -80,7 +80,7 @@ class UpdateManager(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        new_task = tasks.loop(seconds = 10*60, count = None)(self.static_loop)
+        new_task = tasks.loop(seconds = 60*60, count = None)(self.static_loop)
         new_task.start()
 
 

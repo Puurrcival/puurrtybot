@@ -4,7 +4,7 @@ import asyncio
 
 import discord
 from discord import app_commands
-from discord.ext import commands, tasks
+from discord.ext import commands
 
 from puurrtybot.database import query as dq, update as du
 from puurrtybot.database.create import User
@@ -16,90 +16,57 @@ VERIFY_TWEET_ID = '1549207713594343425'
 VERIFY_CONVERSATION_ID = twitter.get_conversation_id_by_tweet_id(VERIFY_TWEET_ID)
 
 
-class TwitterVerify:
-    def __init__(self, user_id: int, twitter_handle: str, twitter_id: str):
-        self.user_id = user_id
-        self.twitter_handle = twitter_handle
-        self.twitter_id = twitter_id
-        self.amount = str(random.choice(list(range(1_000_000, 9_000_000+1))))
-        self.time = hf.get_utc_time()
-        
-    def verify_twitter(self):
-        time_limit = 70*60
-        response = twitter.get_reply_from_to(f"""{self.twitter_handle}""", """PuurrtyBot""")
-        try:
-            if [data for data in response['data'] if data['author_id'] == self.twitter_id and self.amount in data['text'] and twitter.time_to_timestamp(data['created_at']) - hf.get_utc_time() + time_limit > 0]:
-                return True
-        except KeyError:
-            pass
-
-        response = twitter.get_conversation_by_conversation_id(VERIFY_CONVERSATION_ID)
-        try:
-            if [data for data in response['data'] if data['author_id'] == self.twitter_id and self.amount in data['text'] and twitter.time_to_timestamp(data['created_at']) - hf.get_utc_time() + time_limit > 0]:
-                return True
-        except KeyError:
-            pass
-        return False
+async def verify_twitter(user, amount, time_window):
+    response = twitter.get_reply_from_to(f"""{user.twitter_handle}""", """PuurrtyBot""")
+    try:
+        if [data for data in response['data'] if data['author_id'] == user.twitter_id and amount in data['text'] and twitter.time_to_timestamp(data['created_at']) - hf.get_utc_time() + time_window > 0]:
+            return True
+    except KeyError:
+        pass
+    response = twitter.get_conversation_by_conversation_id(VERIFY_CONVERSATION_ID)
+    try:
+        if [data for data in response['data'] if data['author_id'] == user.twitter_id and amount in data['text'] and twitter.time_to_timestamp(data['created_at']) - hf.get_utc_time() + time_window > 0]:
+            return True
+    except KeyError:
+        pass
+    return False
 
 
 class TwitterVerifier(commands.Cog):
-    def __init__(self, client: commands.bot.Bot):
-        self.client = client
-        self._tasks = {} 
-        self.task_n = 0
-        self.counter = {}
-        self.interaction = {}
-        self.verification = {}
-
-    async def static_loop(self, user_id: int, count: int):
-        print('verify started')
-        interaction: discord.Interaction = self.interaction[user_id]
-        self.counter[user_id] += 1
-        check = self.verification[user_id].verify_twitter()
-        twitter_handle = self.verification[user_id].twitter_handle
-        if check:
-            await interaction.followup.send(f"""<@{user_id}>, reply found, your twitter account is now verified: {twitter_handle}""", ephemeral = True)
-            user: User = dq.fetch_row(User(user_id))
-            user.twitter_id = self.verification[user_id].twitter_id
-            user.twitter_handle = self.verification[user_id].twitter_handle
-            du.update_object(user)
-            self._tasks[user_id].cancel()
-        elif self.counter[user_id] > count:
-            await interaction.followup.send(f"""<@{user_id}>, verifying time exceeded.""", ephemeral = True)
-            print('time exceeded')
-        else:
-            print(f"""not verified {user_id} {twitter_handle}""")
-            await interaction.followup.send(f"""... still looking for reply. \n Next check for reply <t:{int(datetime.datetime.now().timestamp())+60*5}:R>.""", ephemeral = True)
-            self.interaction[user_id] = interaction
-
-    def task_launcher(self, user_id, seconds, count):
-        new_task = tasks.loop(seconds = seconds, count = count)(self.static_loop)
-        new_task.start(user_id, count)
-        self._tasks[user_id] = new_task
-        self.counter[user_id] = 1
-
+    def __init__(self, bot: commands.bot.Bot):
+        self.bot = bot
 
     @app_commands.command(name = "verify_twitter", description = "Verify twitter.")
     async def verify_twitter(self, interaction: discord.Interaction, *, twitter_handle: str):
-        user_id = interaction.user.id
-        try:    
-            self._tasks[user_id].cancel()
-        except KeyError:
-            pass
-        twitter_handle = twitter_handle.strip('@')
+        ctx: commands.Context = await commands.Context.from_interaction(interaction)
+        twitter_handle = twitter_handle.strip('@ ')
         twitter_id = twitter.get_twitter_id_by_username(twitter_handle)
-
-        if dq.fetch_row(User(user_id)).twitter_id == twitter_id:
-            await interaction.response.send_message(f"""{interaction.user.mention}, {twitter_handle} already verified""", ephemeral = True)
-        elif not twitter_id:
-             await interaction.response.send_message(f"""{interaction.user.mention}, the entered twitter name **{twitter_handle}** **doesn't exist**. Please check the spelling and try again.""", ephemeral = True)        
+        if not twitter_id:
+            content = f"""{interaction.user.mention}, the entered twitter handle <**{twitter_handle}**> **doesn't exist**. Please check the spelling and try again."""
+        elif dq.fetch_row_by_value(User, User().column.twitter_id, twitter_id):
+            print(dq.fetch_row_by_value(User, User().column.twitter_id, twitter_id))
+            content = f"""{interaction.user.mention}, this twitter handle has been verified already: **{twitter_handle}**"""
         else:
-            self.verification[user_id] = TwitterVerify(user_id = user_id, twitter_handle = twitter_handle, twitter_id = twitter_id)
-            await interaction.response.send_message(f"""**Verify a new twitter account** \n\n⌛ Please reply with **{self.verification[user_id].amount}** to https://twitter.com/PuurrtyBot/status/1549207713594343425 from **{twitter_handle}** within the next 60 minutes.\n\nWill check every 5 minutes.""", ephemeral = True)
-            await asyncio.sleep(5*60)
-            self.interaction[user_id] = interaction
-            self.task_launcher(user_id, seconds=60*5, count=12)
+            amount = random.choice(list(range(2_000_000, 3_000_000+1)))
+            content = f"""**Verify a new twitter account** \n\n⌛ Please reply with **{amount}** to https://twitter.com/PuurrtyBot/status/1549207713594343425 from **{twitter_handle}** within the next 60 minutes.\n\nWill check every 5 minutes."""
+        await interaction.response.send_message(content, ephemeral = True)
 
+        amount = None
+        time_window = 3*60
+        if amount:
+            user: User = dq.fetch_row(User(interaction.user.id))
+            user.twitter_id, user.twitter_handle = twitter_id, twitter_handle
+            await asyncio.sleep(time_window)
+
+            message = await ctx.send(f"""Next check: <t:{int(datetime.datetime.now().timestamp())+time_window}:R>.""", ephemeral=True)
+            for _ in range(20):
+                if await verify_twitter(user, amount, time_window):
+                    du.update_object(user)
+                    if not interaction.is_expired(): await message.edit(content = f"""Verification of **{user.twitter_handle}** successful.""") 
+                    break
+                await asyncio.sleep(time_window)
+                if not interaction.is_expired(): await message.edit(content = f"""Next check: <t:{int(datetime.datetime.now().timestamp())+time_window}:R>.""")
+    
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(TwitterVerifier(bot), guilds = [discord.Object(id = 998148160243384321)])
