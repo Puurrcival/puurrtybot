@@ -1,7 +1,7 @@
 from puurrtybot.database.create import Address, User, Sale, Listing, Tweet, sql_insert
 from puurrtybot.database.table import Table
 import puurrtybot.database.query as dq
-import puurrtybot.api.blockfrost as blockfrost
+import puurrtybot.api.blockfrostio as blockfrostio
 
 
 @sql_insert
@@ -19,7 +19,7 @@ def new_address_stake_address(address, stake_address, user_id):
 
 
 def new_address(address, user_id):
-    stake_address = blockfrost.get_stake_address_by_address(address)
+    stake_address = blockfrostio.get_stake_address_by_address(address)
     insert_row(Address(address = address, stake_address = stake_address, user_id = user_id))
 
 

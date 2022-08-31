@@ -1,6 +1,6 @@
 import tqdm
 
-import puurrtybot.api.blockfrost as blockfrost
+import puurrtybot.api.blockfrostio as blockfrostio
 import puurrtybot.database.query as dq
 
 from puurrtybot.database.create import sql_update, User, Asset
@@ -30,9 +30,9 @@ def delete_object(sql_object: Table, session = None) -> None:
 
 @sql_update
 def update_address_by_asset_id(asset_id, address, session=None):
-    address_type = blockfrost.get_address_type(address)
-    stake_address = blockfrost.get_stake_address_by_address(address)
-    stake_address_type = blockfrost.get_address_type(stake_address)
+    address_type = blockfrostio.get_address_type(address)
+    stake_address = blockfrostio.get_stake_address_by_address(address)
+    stake_address_type = blockfrostio.get_address_type(stake_address)
     session.query(Asset).filter(Asset.asset_id == asset_id).update(
         {'address': address,
          'address_type': address_type.name if address_type else None,
@@ -43,5 +43,5 @@ def update_address_by_asset_id(asset_id, address, session=None):
 
 def update_asset_address_all():
     for asset in tqdm.tqdm(dq.get_asset_all()):
-        address = blockfrost.get_address_by_asset(asset.asset_id)
+        address = blockfrostio.get_address_by_asset(asset.asset_id)
         update_address_by_asset_id(asset.asset_id, address)

@@ -6,15 +6,15 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from puurrtybot.api import blockfrost
+from puurrtybot.api import blockfrostio
 from puurrtybot.database import query as dq, insert as di
 from puurrtybot.database.create import Address, User
 from puurrtybot.discord.cogs.updatemanager import update_role_all_by_user
 
 
 async def verify_transaction(address: str, past_time: int, amount: str, address_list: list = None):
-    tx_hash_list = [tx_hash for tx_hash in blockfrost.get_tx_hash_list_by_address(address, past_time)]
-    utxo_list_list = [blockfrost.get_utxo_list_by_tx_hash(tx_hash) for tx_hash in tx_hash_list]
+    tx_hash_list = [tx_hash for tx_hash in blockfrostio.get_tx_hash_list_by_address(address, past_time=past_time)]
+    utxo_list_list = [blockfrostio.get_utxo_list_by_tx_hash(tx_hash) for tx_hash in tx_hash_list]
     for utxo_list in utxo_list_list:
         if [True for utxo_input in utxo_list['inputs'] if utxo_input['address'] not in address_list]: return False
         for utxo_output in utxo_list['outputs']:
@@ -30,11 +30,11 @@ class WalletVerifier(commands.Cog):
     @app_commands.command(name = "verify_wallet", description = "Verify wallet.")
     async def verify_wallet(self, interaction: discord.Interaction, *, address: str):
         ctx: commands.Context = await commands.Context.from_interaction(interaction)
-        adahandle = blockfrost.get_address_by_adahandle(address)
+        adahandle = blockfrostio.get_address_by_adahandle(address)
         address: Address = Address( address = adahandle if adahandle else address, 
                                     user_id = interaction.user.id)
         amount = None
-        if not blockfrost.valid_address(address.address):
+        if not blockfrostio.valid_address(address.address):
             content = f"""{interaction.user.mention}, the entered address <**{address.address}**> **doesn't exist**. Please check the spelling and try again."""
         elif dq.fetch_row(address):
             content = f"""{interaction.user.mention}, this address has been verified already: {address.address}"""
@@ -45,7 +45,7 @@ class WalletVerifier(commands.Cog):
 
         if amount:
             time_window = 3*60
-            address_list = blockfrost.get_address_list_by_stake_address(address.stake_address) if address.stake_address else []
+            address_list = blockfrostio.get_address_list_by_stake_address(address.stake_address) if address.stake_address else []
             message = await ctx.send(f"""Next check: <t:{int(datetime.datetime.now().timestamp())+time_window}:R>.""", ephemeral=True)
             for _ in range(20):
                 if await verify_transaction(address.address, time_window, amount, address_list) and not interaction.is_expired():

@@ -1,6 +1,6 @@
 # Testing blockfrost api
 
-import puurrtybot.api.blockfrost as blockfrost
+import puurrtybot.api.blockfrostio as blockfrostio
 from puurrtybot import POLICY_PCS
 
 ADAHANDLE = "$puurrcival"
@@ -17,70 +17,70 @@ def exists_not(function, arg, status_code=404):
 
 
 def test_get_server_time():
-    assert int == type(blockfrost.get_server_time())
+    assert int == type(blockfrostio.get_server_time())
 
 
 def test_address_exists():
     # exists
-    assert blockfrost.valid_address(ADDRESS)
+    assert blockfrostio.valid_address(ADDRESS)
 
     # exists not
-    assert not blockfrost.valid_address("")
+    assert not blockfrostio.valid_address("")
 
 
 def test_get_asset_list_by_policy():
-    assert "f96584c4fcd13cd1702c9be683400072dd1aac853431c99037a3ab1e5a68757a69" == blockfrost.get_asset_list_by_policy_id(POLICY_PCS, max_pages = 1, order='desc')[0]
+    assert "f96584c4fcd13cd1702c9be683400072dd1aac853431c99037a3ab1e5a68757a69" == blockfrostio.get_asset_list_by_policy_id(POLICY_PCS, max_pages = 1, order='desc')[0]
 
 
 def test_get_meta_by_asset():
     # exsists
-    assert ASSET == blockfrost.get_meta_by_asset(ASSET)['asset']
+    assert ASSET == blockfrostio.get_meta_by_asset(ASSET)['asset']
 
     # exists not
-    blockfrost.get_stake_address_by_address("") is None
+    blockfrostio.get_stake_address_by_address("") is None
 
 
 def test_get_stake_address_by_address():
     # exists
-    assert STAKE_ADDRESS == str(blockfrost.get_stake_address_by_address(ADDRESS))
+    assert STAKE_ADDRESS == str(blockfrostio.get_stake_address_by_address(ADDRESS))
 
     # exists not
-    blockfrost.get_stake_address_by_address("") is None
+    blockfrostio.get_stake_address_by_address("") is None
 
 
 def test_get_address_list_by_stake_address():
     # exists
-    assert ADDRESS in blockfrost.get_address_list_by_stake_address(STAKE_ADDRESS)
+    assert ADDRESS in blockfrostio.get_address_list_by_stake_address(STAKE_ADDRESS)
 
     # exists not
-    exists_not(blockfrost.get_address_list_by_stake_address, "", 400)
+    exists_not(blockfrostio.get_address_list_by_stake_address, "", 400)
 
 
 def test_get_tx_hash_list_by_address():
     # exists
-    assert TX_HASH == blockfrost.get_tx_hash_list_by_address(ADDRESS, past_time = 999_999_999, order = "asc")[0]
+    assert TX_HASH == blockfrostio.get_tx_hash_list_by_address(ADDRESS, past_time = 999_999_999, order = "asc")[0]
 
     # exists not
 
 def test_get_utxo_list_by_tx_hash():
     # exists
-    assert TX_HASH == blockfrost.get_utxo_list_by_tx_hash(TX_HASH)['hash']
+    assert TX_HASH == blockfrostio.get_utxo_list_by_tx_hash(TX_HASH)['hash']
 
     # exists not
-    exists_not(blockfrost.get_utxo_list_by_tx_hash, "", 404)
+    exists_not(blockfrostio.get_utxo_list_by_tx_hash, "", 404)
 
 
 def test_get_tx_by_tx_hash():
     # exists
-    assert TX_HASH == blockfrost.get_tx_by_tx_hash(TX_HASH)['hash']
+    assert TX_HASH == blockfrostio.get_tx_by_tx_hash(TX_HASH)['hash']
 
     # exists not
-    exists_not(blockfrost.get_tx_by_tx_hash, "", 404)
+    exists_not(blockfrostio.get_tx_by_tx_hash, "", 404)
 
 
 def test_get_address_by_adahandle():
     # exists
-    assert ADDRESS == blockfrost.get_address_by_adahandle("$puurrcival")
+    assert ADDRESS == blockfrostio.get_address_by_adahandle("$puurrcival")
 
     # exists not
-    exists_not(blockfrost.get_address_by_adahandle, "$012345678901234567890", 404)
+    exists_not(blockfrostio.get_address_by_adahandle, "$012345678901234567890", 404)

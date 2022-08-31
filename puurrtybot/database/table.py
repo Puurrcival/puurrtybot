@@ -6,7 +6,7 @@ import inspect
 from pycardano import AddressType
 
 from puurrtybot.pcs import metadata
-from puurrtybot.api import blockfrost
+from puurrtybot.api import blockfrostio
     
 
 class VarName:
@@ -117,7 +117,7 @@ class Asset(Table):
         self.first_name = metadata.First_name(self.first_name)
         self.last_name = metadata.Last_name(self.last_name)
         self.suffix_name = metadata.Suffix_name(self.suffix_name)
-        self.stake_address = blockfrost.get_stake_address_by_address(self.address) if not self.stake_address else self.stake_address
+        self.stake_address = blockfrostio.get_stake_address_by_address(self.address) if not self.stake_address else self.stake_address
 
 
 @dataclass(order=True)

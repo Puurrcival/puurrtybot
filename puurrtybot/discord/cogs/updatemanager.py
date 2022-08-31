@@ -6,7 +6,7 @@ from discord.ext import commands, tasks
 import tqdm
 
 import puurrtybot
-from puurrtybot.api import blockfrost, twitter
+from puurrtybot.api import blockfrostio, twitter
 from puurrtybot.database import query as dq, update as du, insert as di
 from puurrtybot.database.create import Address, User
 from puurrtybot.helper import functions as hf
@@ -16,7 +16,7 @@ from puurrtybot.pcs.role import ID_2_ROLE, Family, Status
 def update_asset_all():
     outdated_assets = dq.get_asset_all(hf.get_utc_time()-24*60*60)
     for asset in tqdm.tqdm(outdated_assets):
-        asset.address = blockfrost.get_address_by_asset(asset.asset_id)
+        asset.address = blockfrostio.get_address_by_asset(asset.asset_id)
         du.update_object(asset)
 
 
@@ -26,7 +26,7 @@ def update_address_all_by_user(user: User):
     if addresses:
         stake_addresses = set([address.stake_address for address in addresses if address.stake_address])
         for stake_address in stake_addresses:
-            for address in blockfrost.get_address_list_by_stake_address(stake_address):
+            for address in blockfrostio.get_address_list_by_stake_address(stake_address):
                 if address not in addresses_address:
                     di.insert_row(Address(address, stake_address, user.user_id))
 

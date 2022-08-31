@@ -4,7 +4,7 @@ import puurrtybot
 from puurrtybot.pcs.config import POLICY_ID
 from puurrtybot.pcs.metadata import Name
 from puurrtybot.database.create import Asset, Role, session, sql_insert
-from puurrtybot.api import blockfrost, jpgstore, twitter
+from puurrtybot.api import blockfrostio, jpgstore, twitter
 from puurrtybot.pcs import TWITTER_ID
 from puurrtybot.database import query as dq
 from puurrtybot.pcs.role import ID_2_ROLE
@@ -35,11 +35,11 @@ def get_mint_price(amount):
 
 
 def initialize_mint_prices(mint_address: str = 'addr1vxk4szdzv6qxqne5k3m0wr4m5cewh2pnt23tn3tx2x28zsq7ml8dm'):
-    mint_tx_hash_list = blockfrost.get_tx_hash_list_by_address(mint_address, order="asc", past_time = blockfrost.get_server_time(), hash_only=False)
+    mint_tx_hash_list = blockfrostio.get_tx_hash_list_by_address(mint_address, order="asc", past_time = blockfrostio.get_server_time(), hash_only=False)
     quantity_inputs = {}
     for tx in tqdm.tqdm(mint_tx_hash_list):
         block_time = tx['block_time']
-        utxo_list = blockfrost.get_utxo_list_by_tx_hash(tx['tx_hash'])
+        utxo_list = blockfrostio.get_utxo_list_by_tx_hash(tx['tx_hash'])
         inputs = [utxo['address'] for utxo in utxo_list['inputs']]
         outputs = [utxo['amount'][0]['quantity'] for utxo in utxo_list['outputs'] if utxo['address']==mint_address]
         if outputs:
@@ -47,9 +47,9 @@ def initialize_mint_prices(mint_address: str = 'addr1vxk4szdzv6qxqne5k3m0wr4m5ce
 
     mint_matches = {}
     for asset in tqdm.tqdm(dq.get_asset_all()):
-        utxo_list = blockfrost.get_utxo_list_by_tx_hash(asset.initial_mint_tx_hash)
+        utxo_list = blockfrostio.get_utxo_list_by_tx_hash(asset.initial_mint_tx_hash)
         mint_address = [utxo['address']  for utxo in utxo_list['outputs'] if [amount for amount in utxo['amount'] if asset == amount['unit']]][0]
-        mint_block_time = blockfrost.get_tx_by_tx_hash(asset.initial_mint_tx_hash)['block_time']
+        mint_block_time = blockfrostio.get_tx_by_tx_hash(asset.initial_mint_tx_hash)['block_time']
         for _ , data in quantity_inputs.items():
             if data['block_time'] < mint_block_time and mint_address in data['input_addresses']:
                 try:
@@ -84,18 +84,18 @@ def initialize_assets():
             suffix_name = name_parts.suffix
 
         try:
-            address = blockfrost.get_address_by_asset(asset['asset'])
+            address = blockfrostio.get_address_by_asset(asset['asset'])
         except requests.ConnectionError:
             time.sleep(5)
-            address = blockfrost.get_address_by_asset(asset['asset'])
-        stake_address = blockfrost.get_stake_address_by_address(address)
+            address = blockfrostio.get_address_by_asset(asset['asset'])
+        stake_address = blockfrostio.get_stake_address_by_address(address)
 
         session.add(Asset(
             asset_id = asset['asset'],
             address = address,
-            address_type = blockfrost.get_address_type(address),
+            address_type = blockfrostio.get_address_type(address),
             stake_address = stake_address,
-            stake_address_type = blockfrost.get_address_type(stake_address),
+            stake_address_type = blockfrostio.get_address_type(stake_address),
             policy_id = asset.get('policy_id'),
             asset_fingerprint = asset['fingerprint'],
             initial_mint_tx_hash = asset.get('initial_mint_tx_hash'),
