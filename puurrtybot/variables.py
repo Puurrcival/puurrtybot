@@ -10,7 +10,7 @@ GUILD = 998148160243384321
 TWITTER_ID = 1479912806866694149 #PuurrtyCats
 DISCORD_ROLES = None
 SESSION = None
-
+PUURRDO_ANSWER = {}
 
 def load_json_db(DB_PATH: str):
     try:

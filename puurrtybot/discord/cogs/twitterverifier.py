@@ -12,24 +12,17 @@ import puurrtybot.helper.functions as hf
 import puurrtybot.api.twitter as twitter
 
 
-VERIFY_TWEET_ID = '1549207713594343425'
-VERIFY_CONVERSATION_ID = twitter.get_conversation_id_by_tweet_id(VERIFY_TWEET_ID)
+amount=" check2"
+verify_tweets = twitter.get_conversation_by_conversation_id('1549207713594343425')['data']
+print([(tweet.get('author_id')) for tweet in verify_tweets if amount in tweet.get('text', '')])
 
+VERIFY_CONVERSATION_ID = VERIFY_TWEET_ID = '1549207713594343425'
 
 async def verify_twitter(user, amount, time_window):
-    response = twitter.get_reply_from_to(f"""{user.twitter_handle}""", """PuurrtyBot""")
-    try:
-        if [data for data in response['data'] if data['author_id'] == user.twitter_id and amount in data['text'] and twitter.time_to_timestamp(data['created_at']) - hf.get_utc_time() + time_window > 0]:
-            return True
-    except KeyError:
+    amount=" check2"
+    response = twitter.get_conversation_by_conversation_id('1549207713594343425')['data']
+    if [(tweet.get('author_id')) for tweet in response if amount in tweet.get('text', '')]:
         pass
-    response = twitter.get_conversation_by_conversation_id(VERIFY_CONVERSATION_ID)
-    try:
-        if [data for data in response['data'] if data['author_id'] == user.twitter_id and amount in data['text'] and twitter.time_to_timestamp(data['created_at']) - hf.get_utc_time() + time_window > 0]:
-            return True
-    except KeyError:
-        pass
-    return False
 
 
 class TwitterVerifier(commands.Cog):
@@ -47,7 +40,7 @@ class TwitterVerifier(commands.Cog):
             print(dq.fetch_row_by_value(User, User().column.twitter_id, twitter_id))
             content = f"""{interaction.user.mention}, this twitter handle has been verified already: **{twitter_handle}**"""
         else:
-            amount = random.choice(list(range(2_000_000, 3_000_000+1)))
+            amount = random.getrandbits(128)
             content = f"""**Verify a new twitter account** \n\n⌛ Please reply with **{amount}** to https://twitter.com/PuurrtyBot/status/1549207713594343425 from **{twitter_handle}** within the next 60 minutes.\n\nWill check every 5 minutes."""
         await interaction.response.send_message(content, ephemeral = True)
 

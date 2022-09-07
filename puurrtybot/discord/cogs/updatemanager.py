@@ -8,7 +8,7 @@ import tqdm
 import puurrtybot
 from puurrtybot.api import blockfrostio, twitter
 from puurrtybot.database import query as dq, update as du, insert as di
-from puurrtybot.database.create import Address, User
+from puurrtybot.database.create import Address, Asset, User
 from puurrtybot.helper import functions as hf
 from puurrtybot.pcs.role import ID_2_ROLE, Family, Status
 
@@ -56,8 +56,21 @@ async def update_role_all_by_user(user: User):
         if add_roles:
             await member.add_roles(*add_roles)
 
+def update_user_jpg_store(user: User):
+    user.username = str(puurrtybot.GUILD.get_member(user.user_id))
+    du.update_object(user)
+    asset_list: List[Asset] = dq.fetch_row_by_value(Asset, Asset().column.discord_handle, user.username, all=True)
+    asset_list = [asset.address for asset in asset_list]
+    if asset_list:
+        address_list: List[Address] = dq.fetch_row_by_value(Address, Address().column.user_id, user.user_id, all=True)
+        address_list = [(address.address, address.stake_address) for address in address_list if address.address not in asset_list]
+        if address_list:
+            for address, stake_address in address_list:
+                di.insert_row(Address(address, stake_address, user.user_id))
+
 
 async def update_user(user: User):
+    update_user_jpg_store(user)
     update_address_all_by_user(user)
     update_twitter_by_user(user)
     await update_role_all_by_user(user)

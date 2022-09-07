@@ -97,3 +97,11 @@ def get_listings_untracked(policy_id: str) -> List[Listing]:
             else:
                 untracked_listings[listing.listing_id] = listing
     return list(untracked_listings.values())
+
+
+def get_discord_by_address(address: str) -> str:
+    return requests.get(f"""{NETWORK}/user/{address}/profile""").json().get('discord_handle')
+
+
+def get_jpgstore_profile_by_address(address: str) -> str:
+    return requests.get(f"""{NETWORK}/user/{address}/profile""").json()

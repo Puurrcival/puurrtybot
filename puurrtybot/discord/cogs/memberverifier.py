@@ -1,23 +1,24 @@
+#https://www.pokernow.club/mtt/puurrtybot-53lMD8bXp9
+
 import discord
 from discord import app_commands
 from discord.ext import commands
 
+import puurrtybot
 from puurrtybot.database.create import User
 from puurrtybot.helper import image_handle
-
-PUURRDO_ANSWER = {}
+from puurrtybot.discord.selectmenu import PuurrdoSelect
 
 
 async def find_puurrdo(interaction: discord.Interaction):
-    image, answer = image_handle.puurrdo()
-    PUURRDO_ANSWER[interaction.user.id] = str(answer)
-    embed = discord.Embed(title=f"""**Where is Puurrdo?**""", description="Find Puurrdo in the image and solve with: **/verify_solve**", color=0x109319)
+    image, puurrtybot.PUURRDO_ANSWER[interaction.user.id] = image_handle.puurrdo()
+    embed = discord.Embed(title=f"""**Where is Puurrdo?**""", description="Find Puurrdo by selecting the correct number tile!", color=0x109319)
     image_files = [discord.File(image, filename="puurrdo.png"),
                     discord.File(image_handle.get_asset_image("f96584c4fcd13cd1702c9be683400072dd1aac853431c99037a3ab1e5075757272646f"), filename="thumbnail.png")]
     
     embed.set_thumbnail(url=f"""attachment://thumbnail.png""")
     embed.set_image(url=f"""attachment://puurrdo.png""")
-    await interaction.response.send_message(embed = embed, files = image_files, ephemeral=True)
+    await interaction.followup.send(embed = embed, files = image_files, view=PuurrdoSelect(), ephemeral=True)
 
 
 class MemberVerifier(commands.Cog):

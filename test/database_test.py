@@ -48,4 +48,7 @@ async def looping():
     user = [user for user in query.fetch_table(User) if user.user_id == 642352900357750787][0]
     print(user)
     
-asyncio.run(looping())
+#asyncio.run(looping())
+
+user = query.fetch_row(User(991345811462029392))
+update.delete_object(user)

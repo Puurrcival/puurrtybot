@@ -50,7 +50,7 @@ class Asset(table.Asset):
         Column('address', String(255), ForeignKey('addresses.address')),
         Column('address_type', Enum(AddressType)),
         Column('stake_address', String(255)),
-        Column('stake_address_type', Enum(AddressType)),
+        Column('discord_handle', String(255), ForeignKey('users.username')),
         Column('policy_id', String(255)),
         Column('asset_fingerprint', String(63)),
         Column('initial_mint_tx_hash', String(63)),

@@ -71,11 +71,11 @@ def get_username_by_twitter_id(twitter_id: int) -> str:
 
 
 def get_conversation_id_by_tweet_id(tweet_id: int) -> int:
-    return int(query(f"""/tweets/{tweet_id}?tweet.fields=conversation_id""").json()['data']['conversation_id'])
+    return int(query(f"""/tweets/{tweet_id}?tweet.fields=conversation_id&user.fields=username""").json()['data']['conversation_id'])
 
 
 def get_conversation_by_conversation_id(conversation_id: str) -> dict:
-    return query(f"""/tweets/search/recent?query=conversation_id:{conversation_id}&tweet.fields=author_id,created_at""").json()
+    return query(f"""/tweets/search/recent?query=conversation_id:{conversation_id}&tweet.fields=author_id,created_at,text&expansions=author_id&user.fields=username""").json()
 
 
 def get_reply_from_to(from_user, to_user) -> dict:

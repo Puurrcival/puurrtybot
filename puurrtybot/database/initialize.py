@@ -3,7 +3,7 @@ import tqdm, requests, time
 import puurrtybot
 from puurrtybot.pcs.config import POLICY_ID
 from puurrtybot.pcs.metadata import Name
-from puurrtybot.database.create import Asset, Role, session, sql_insert
+from puurrtybot.database.create import Asset, Role, sql_insert
 from puurrtybot.api import blockfrostio, jpgstore, twitter
 from puurrtybot.pcs import TWITTER_ID
 from puurrtybot.database import query as dq
@@ -33,45 +33,48 @@ def get_mint_price(amount):
         return 1
     return amount
 
-
+MINT_MATCHES = {}
+QUANTITY_INPUTS = {}
 def initialize_mint_prices(mint_address: str = 'addr1vxk4szdzv6qxqne5k3m0wr4m5cewh2pnt23tn3tx2x28zsq7ml8dm'):
     mint_tx_hash_list = blockfrostio.get_tx_hash_list_by_address(mint_address, order="asc", past_time = blockfrostio.get_server_time(), hash_only=False)
-    quantity_inputs = {}
     for tx in tqdm.tqdm(mint_tx_hash_list):
         block_time = tx['block_time']
         utxo_list = blockfrostio.get_utxo_list_by_tx_hash(tx['tx_hash'])
         inputs = [utxo['address'] for utxo in utxo_list['inputs']]
         outputs = [utxo['amount'][0]['quantity'] for utxo in utxo_list['outputs'] if utxo['address']==mint_address]
         if outputs:
-            quantity_inputs[tx['tx_hash']] = {'block_time':block_time, 'input_addresses': inputs, 'quantities': outputs}
+            QUANTITY_INPUTS[tx['tx_hash']] = {'block_time':block_time, 'input_addresses': inputs, 'quantities': outputs}
 
+def get_asset_mint(asset):
     mint_matches = {}
-    for asset in tqdm.tqdm(dq.get_asset_all()):
-        utxo_list = blockfrostio.get_utxo_list_by_tx_hash(asset.initial_mint_tx_hash)
-        mint_address = [utxo['address']  for utxo in utxo_list['outputs'] if [amount for amount in utxo['amount'] if asset == amount['unit']]][0]
-        mint_block_time = blockfrostio.get_tx_by_tx_hash(asset.initial_mint_tx_hash)['block_time']
-        for _ , data in quantity_inputs.items():
-            if data['block_time'] < mint_block_time and mint_address in data['input_addresses']:
-                try:
-                    mint_matches[asset] += [{'mint_block_time': mint_block_time,'block_time': data['block_time'], 'address': mint_address, 'quantity':data['quantities']}]
-                except KeyError:
-                    mint_matches[asset] = [{'mint_block_time': mint_block_time,'block_time': data['block_time'], 'address': mint_address, 'quantity':data['quantities']}]
-        try:
-            mint_matches[asset.asset_id]
-        except KeyError:
-            mint_matches[asset.asset_id] = mint_block_time
+    utxo_list = blockfrostio.get_utxo_list_by_tx_hash(asset.initial_mint_tx_hash)
+    mint_address = [utxo['address']  for utxo in utxo_list['outputs'] if [amount for amount in utxo['amount'] if asset.asset_id == amount['unit']]][0]
+    mint_block_time = blockfrostio.get_tx_by_tx_hash(asset.initial_mint_tx_hash)['block_time']
+    for _ , data in QUANTITY_INPUTS.items():
+        if data['block_time'] < mint_block_time and mint_address in data['input_addresses']:
+            try:
+                mint_matches[asset.asset_id] += [{'mint_block_time': mint_block_time,'block_time': data['block_time'], 'address': mint_address, 'quantity':data['quantities']}]
+            except KeyError:
+                mint_matches[asset.asset_id] = [{'mint_block_time': mint_block_time,'block_time': data['block_time'], 'address': mint_address, 'quantity':data['quantities']}]
+    try:
+        mint_matches[asset.asset_id]
+    except KeyError:
+        mint_matches[asset.asset_id] = mint_block_time
 
-    assets_mint = {}
     for asset, data in mint_matches.items():
         if type(data) != int:
-            asset.mint_price = [get_mint_price(d['quantity'][0]) for d in data][-1]
-            asset.mint_time = data[0]['mint_block_time']
+            mint_price = [get_mint_price(d['quantity'][0]) for d in data][-1]
+            mint_time = data[0]['mint_block_time']
         else:
-            asset.mint_price = 0
-            asset.mint_time = data
-    
+            mint_price = 0
+            mint_time = data
+    return {'mint_price': mint_price, 'mint_time': mint_time}
 
+
+JPGSTORE_DISCORD_HANDLE = {}
+@sql_insert
 def initialize_assets():
+    assets = []
     for asset in tqdm.tqdm(puurrtybot.ASSETS.values()):
         name = asset['onchain_metadata'].get('name')
         if asset['onchain_metadata'].get('unique'):
@@ -90,12 +93,18 @@ def initialize_assets():
             address = blockfrostio.get_address_by_asset(asset['asset'])
         stake_address = blockfrostio.get_stake_address_by_address(address)
 
-        session.add(Asset(
+        temp_address = stake_address if stake_address else address
+        if JPGSTORE_DISCORD_HANDLE.get(temp_address): discord_handle = JPGSTORE_DISCORD_HANDLE.get(temp_address)
+        else: JPGSTORE_DISCORD_HANDLE[temp_address] = discord_handle = jpgstore.get_discord_by_address(temp_address)
+
+        mint_data = get_asset_mint(Asset(asset_id = asset['asset'], initial_mint_tx_hash = asset.get('initial_mint_tx_hash')))
+
+        assets.append(Asset(
             asset_id = asset['asset'],
             address = address,
             address_type = blockfrostio.get_address_type(address),
             stake_address = stake_address,
-            stake_address_type = blockfrostio.get_address_type(stake_address),
+            discord_handle = discord_handle,
             policy_id = asset.get('policy_id'),
             asset_fingerprint = asset['fingerprint'],
             initial_mint_tx_hash = asset.get('initial_mint_tx_hash'),
@@ -119,10 +128,10 @@ def initialize_assets():
             outfit = none_string_to_none(asset['onchain_metadata'].get('outfit')),  
             background = none_string_to_none(asset['onchain_metadata'].get('background')), 
             collection = asset['onchain_metadata'].get('collection'),
-            mint_price = int(1_000_000*float(asset.get('mint_price'))), 
-            mint_time = asset.get('mint_time'), 
+            mint_price = int(1_000_000*float(mint_data.get('mint_price'))), 
+            mint_time = mint_data.get('mint_time'), 
             ))
-
+    return assets
 
 @sql_insert
 def initialize_sales():
@@ -155,6 +164,7 @@ def initialize_roles():
     return roles
 
 
+initialize_mint_prices()
 initialize_assets()
 initialize_sales()
 initialize_listings()

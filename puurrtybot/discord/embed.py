@@ -1,6 +1,6 @@
 from discord import Embed
 
-TEXT1 = """
+TEXT_RULES = """
 Hello I'm **Officer Whiskers**. You must be new here?
 Before you go any further let me tell you about our **RULES**:
 
@@ -37,5 +37,23 @@ If so it is time to meet your guide **Puurrdo**!
 **Unfortunately he is missing, can you find Puurrdo?**
     """.strip()
 
-RULES_EMBED = Embed(title="Welcome to Puurrty Cats Society!", description=TEXT1, color=0x109319)
+RULES_EMBED = Embed(title="Welcome to Puurrty Cats Society!", description=TEXT_RULES, color=0x109319)
 RULES_EMBED.set_thumbnail(url=f"""https://image-optimizer.jpgstoreapis.com/QmZHdzWXyXMVSUNQRhNyYeQKyaQ8qMZStAQUZAmhJsTzfN""")
+
+
+TEXT_VERIFY = """
+Hello I'm **Abe**. I want you to improve your citizenship!
+
+**Verify Wallet**
+Registered cats grant you special access and rewards.
+
+**Verify Twitter**
+Becoming an influencuurr grants you special access and rewards.
+
+**Verify Poker**
+This feautre is coming soon.
+    """.strip()
+
+VERIFY_EMBED = Embed(title="Welcome to the registration office!", description=TEXT_VERIFY, color=0x109319)
+VERIFY_EMBED.set_thumbnail(url=f"""https://image-optimizer.jpgstoreapis.com/QmXBGsPVnpjVJCfBaCfuGYj1akynUx7N8vjdqkiZa3PJZQ""")
+# Poker: https://www.pokernow.club/mtt/puurrtybot-53lMD8bXp9

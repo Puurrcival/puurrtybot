@@ -72,7 +72,7 @@ class Asset(Table):
     address: str = None
     address_type: AddressType = None,
     stake_address: str = None,
-    stake_address_type: AddressType = None,
+    discord_handle: str = None,
     policy_id: str = None
     asset_fingerprint: str = None
     initial_mint_tx_hash: str = None
@@ -157,7 +157,7 @@ class Tweet(Table):
     author_id: int = None
     in_reply_to_user_id: int = None
     tracked: bool = False 
-    
+
 
 @dataclass(order=True)
 class User(Table):
